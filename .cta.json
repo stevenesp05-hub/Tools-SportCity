@@ -1,0 +1,21 @@
+{
+  "projectName": "tools-sportcity",
+  "mode": "file-router",
+  "typescript": true,
+  "tailwind": true,
+  "packageManager": "npm",
+  "git": true,
+  "install": true,
+  "intent": true,
+  "addOnOptions": {},
+  "projectPreset": "default",
+  "includeExamples": false,
+  "routerOnly": false,
+  "version": 1,
+  "framework": "react",
+  "chosenAddOns": [
+    "shadcn",
+    "eslint",
+    "vercel"
+  ]
+}

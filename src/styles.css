@@ -1,0 +1,1520 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@font-face {
+  font-family: 'Sora';
+  font-weight: 700 800;
+  font-style: normal;
+  font-display: swap;
+  src: url('/brand/fonts/sora-latin-variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('/brand/fonts/inter-latin-variable.woff2') format('woff2');
+}
+
+:root {
+  --doc-desk: oklch(0.955 0.006 90);
+  /* Sport City brand tokens */
+  --sc-navy: oklch(0.24 0.14 275);
+  --sc-navy-2: oklch(0.18 0.1 275);
+  --sc-ink: oklch(0.18 0.03 275);
+  --sc-paper: oklch(0.985 0.004 90);
+  --sc-line: oklch(0.24 0.14 275 / 0.14);
+  --sc-accent: oklch(0.83 0.08 240.12);
+  --sc-accent-ink: oklch(0.35 0.09 240);
+  --sc-gray: oklch(0.48 0.02 275);
+
+  /* Estados semánticos: éxito, aviso, información y peligro. Cada uno tiene texto, fondo suave, borde y color sólido (puntos, iconos). */
+  --success: oklch(0.42 0.1 155);
+  --success-soft: oklch(0.955 0.04 155);
+  --success-line: oklch(0.82 0.08 155);
+  --success-solid: oklch(0.65 0.15 155);
+  --warning: oklch(0.48 0.1 65);
+  --warning-soft: oklch(0.965 0.045 85);
+  --warning-line: oklch(0.84 0.1 80);
+  --warning-solid: oklch(0.78 0.15 75);
+  --info: oklch(0.4 0.1 240);
+  --info-soft: oklch(0.955 0.03 240);
+  --info-line: oklch(0.83 0.07 240);
+  --info-solid: oklch(0.62 0.14 240);
+  --danger-soft: oklch(0.955 0.04 25);
+  --danger-line: oklch(0.84 0.09 25);
+
+  --background: var(--sc-paper);
+  --foreground: var(--sc-ink);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--sc-ink);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--sc-ink);
+  --primary: var(--sc-navy);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.96 0.01 240);
+  --secondary-foreground: var(--sc-navy);
+  --muted: oklch(0.96 0.005 90);
+  --muted-foreground: var(--sc-gray);
+  --accent: var(--sc-accent);
+  --accent-foreground: var(--sc-accent-ink);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: var(--sc-line);
+  --input: var(--sc-line);
+  --ring: var(--sc-accent);
+  --radius: 0.625rem;
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: var(--sc-ink);
+  --sidebar-primary: var(--sc-navy);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.96 0.01 240);
+  --sidebar-accent-foreground: var(--sc-navy);
+  --sidebar-border: var(--sc-line);
+  --sidebar-ring: var(--sc-accent);
+}
+
+.dark {
+  --background: oklch(0.16 0.03 275);
+  --foreground: oklch(0.96 0.005 90);
+  --card: oklch(0.2 0.05 275);
+  --card-foreground: oklch(0.96 0.005 90);
+  --popover: oklch(0.2 0.05 275);
+  --popover-foreground: oklch(0.96 0.005 90);
+  --primary: var(--sc-accent);
+  --primary-foreground: var(--sc-navy);
+  --secondary: oklch(0.26 0.06 275);
+  --secondary-foreground: oklch(0.96 0.005 90);
+  --muted: oklch(0.26 0.06 275);
+  --muted-foreground: oklch(0.7 0.02 275);
+  --accent: oklch(0.3 0.09 275);
+  --accent-foreground: var(--sc-accent);
+  --destructive: oklch(0.637 0.237 25.331);
+  --destructive-foreground: oklch(0.96 0.005 90);
+  --border: oklch(1 0 0 / 0.12);
+  --input: oklch(1 0 0 / 0.16);
+  --ring: var(--sc-accent);
+  --sidebar: oklch(0.2 0.05 275);
+  --sidebar-foreground: oklch(0.96 0.005 90);
+  --sidebar-primary: var(--sc-accent);
+  --sidebar-primary-foreground: var(--sc-navy);
+  --sidebar-accent: oklch(0.26 0.06 275);
+  --sidebar-accent-foreground: oklch(0.96 0.005 90);
+  --sidebar-border: oklch(1 0 0 / 0.12);
+  --sidebar-ring: var(--sc-accent);
+}
+
+@theme inline {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Sora', ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-line: var(--success-line);
+  --color-success-solid: var(--success-solid);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-line: var(--warning-line);
+  --color-warning-solid: var(--warning-solid);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-line: var(--info-line);
+  --color-info-solid: var(--info-solid);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-line: var(--danger-line);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+}
+
+/* Bloques de aviso: caja con fondo tenue y borde, como en los manuales de Sport City */
+div[data-callout] {
+  background: oklch(0.965 0.02 240);
+  border: 1px solid oklch(0.87 0.045 240);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 12px 0;
+}
+div[data-callout] > :first-child {
+  margin-top: 0;
+}
+div[data-callout] > :last-child {
+  margin-bottom: 0;
+}
+div[data-callout][data-tone='warn'] {
+  background: oklch(0.965 0.03 70);
+  border-color: oklch(0.87 0.08 70);
+}
+div[data-callout][data-tone='ok'] {
+  background: oklch(0.96 0.03 150);
+  border-color: oklch(0.85 0.07 150);
+}
+
+/* Hoja del editor: mismo lenguaje visual y mismos márgenes que el PDF, para escribir viendo el resultado final */
+.doc-sheet {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--sc-ink);
+}
+.doc-sheet .sheet-head {
+  border-top: 2px solid var(--sc-navy);
+  padding-top: 0.13in;
+  margin-bottom: 0.05in;
+}
+.doc-sheet .sheet-kicker {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sc-accent-ink);
+}
+.doc-sheet .sheet-title {
+  font-size: 26px;
+  line-height: 1.1;
+  margin: 5px 0 0.22in;
+  color: var(--sc-navy);
+}
+.doc-sheet .ProseMirror {
+  outline: none;
+  min-height: 1.5in;
+}
+.doc-sheet .ProseMirror > * + * {
+  margin-top: 0;
+}
+.doc-sheet .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: oklch(0.6 0.02 275);
+  pointer-events: none;
+}
+.doc-sheet .ProseMirror h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--sc-navy);
+  margin: 0.26in 0 0.12in;
+}
+.doc-sheet .ProseMirror h2::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--sc-line);
+}
+.doc-sheet .ProseMirror h3 {
+  font-size: 13px;
+  color: var(--sc-navy);
+  margin: 0.18in 0 0.06in;
+}
+.doc-sheet .ProseMirror p {
+  margin: 0 0 0.11in;
+}
+.doc-sheet .ProseMirror a {
+  color: var(--sc-accent-ink);
+  text-decoration: underline;
+}
+.doc-sheet .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+}
+.doc-sheet .ProseMirror ul {
+  list-style: disc;
+  margin: 0 0 0.14in;
+  padding-left: 1.15em;
+}
+.doc-sheet .ProseMirror li {
+  margin-bottom: 0.03in;
+}
+.doc-sheet .ProseMirror li > p {
+  margin: 0;
+}
+.doc-sheet .ProseMirror ol {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.2in;
+  counter-reset: rule;
+}
+.doc-sheet .ProseMirror ol > li {
+  counter-increment: rule;
+  display: flex;
+  gap: 0.16in;
+  padding: 0.09in 0;
+  margin: 0;
+  border-bottom: 1px solid var(--sc-line);
+}
+.doc-sheet .ProseMirror ol > li:last-child {
+  border-bottom: none;
+}
+.doc-sheet .ProseMirror ol > li::before {
+  content: counter(rule);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--sc-accent-ink);
+  width: 0.3in;
+  flex: none;
+}
+.doc-sheet .ProseMirror ol > li > p {
+  flex: 1;
+}
+.doc-sheet .ProseMirror ol > li strong {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+.doc-sheet .ProseMirror blockquote {
+  margin: 0.12in 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--sc-accent);
+  background: #fff;
+  border-radius: 0 8px 8px 0;
+}
+.doc-sheet .ProseMirror .tableWrapper {
+  overflow: visible;
+  margin: 0.06in 0 0.2in;
+}
+.doc-sheet .ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  table-layout: fixed;
+}
+.doc-sheet .ProseMirror th {
+  text-align: left;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-accent-ink);
+  background: transparent;
+  padding: 7px 10px;
+  border-bottom: 2px solid var(--sc-navy);
+  position: relative;
+}
+.doc-sheet .ProseMirror td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--sc-line);
+  vertical-align: top;
+  position: relative;
+  min-height: 0.3in;
+}
+.doc-sheet .ProseMirror tbody tr:nth-child(even) td {
+  background: rgba(30, 26, 107, 0.028);
+}
+.doc-sheet .ProseMirror th p,
+.doc-sheet .ProseMirror td p {
+  margin: 0;
+}
+.doc-sheet .ProseMirror .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: oklch(0.83 0.08 240 / 0.28);
+  pointer-events: none;
+}
+.doc-sheet .ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--sc-accent);
+  pointer-events: none;
+}
+.doc-sheet .ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
+/* Cambio de hoja: espacio en blanco, pie de la hoja que termina, hueco de mesa y cabecera de la siguiente */
+.doc-sheet .page-gap {
+  margin-inline: calc(-0.85in - 12px);
+  display: block;
+  user-select: none;
+  pointer-events: none;
+  position: relative;
+  background: var(--doc-desk);
+}
+.doc-sheet .page-gap .pg-tail {
+  margin-inline: 12px;
+  background: var(--sc-paper);
+  border-radius: 0 0 6px 6px;
+  overflow: hidden;
+  box-shadow: 0 10px 18px -8px oklch(0.2 0.05 275 / 0.35);
+}
+.doc-sheet .page-gap .pg-foot {
+  display: flex;
+  align-items: flex-end;
+}
+.doc-sheet .page-gap .pg-bar {
+  width: 100%;
+  height: 0.62in;
+  background: var(--sc-navy);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 0.85in;
+}
+.doc-sheet .page-gap .pg-bar-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 7.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sc-accent);
+  max-width: 3.6in;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.doc-sheet .page-gap .pg-bar-club {
+  margin-top: 4px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+}
+.doc-sheet .page-gap .pg-bar-right {
+  text-align: right;
+  font-size: 8.5px;
+  line-height: 1.6;
+  color: var(--t-on-navy, #dfe3f5);
+}
+.doc-sheet .page-gap .pg-bar-right b {
+  font-family: var(--font-display);
+  color: var(--sc-accent);
+}
+.doc-sheet .page-gap .pg-desk {
+  background: var(--doc-desk);
+}
+.doc-sheet .page-gap .pg-head {
+  margin-inline: 12px;
+  position: relative;
+  background: var(--sc-paper);
+  border-radius: 6px 6px 0 0;
+  box-shadow: 0 -10px 18px -8px oklch(0.2 0.05 275 / 0.3);
+}
+.doc-sheet .page-gap .pg-head-row {
+  position: absolute;
+  left: 0.85in;
+  right: 0.85in;
+  top: 0.36in;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--sc-line);
+}
+.doc-sheet .page-gap .pg-head-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sc-navy);
+}
+.doc-sheet .page-gap .pg-head-name img {
+  height: 24px;
+}
+.doc-sheet .page-gap .pg-wm {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.doc-sheet .page-gap .pg-wm b {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.doc-sheet .page-gap .pg-wm i {
+  margin-top: 3px;
+  font-style: normal;
+  font-size: 7.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.doc-sheet .page-gap .pg-head-title {
+  font-size: 8.5px;
+  color: var(--sc-gray);
+  max-width: 3.8in;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.doc-sheet .ProseMirror .page-gap-row > td,
+.doc-sheet .ProseMirror .page-gap-cell {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  min-height: 0;
+  overflow: visible;
+}
+.doc-sheet .ProseMirror li.page-gap-li {
+  display: block;
+  padding: 0;
+  margin: 0;
+  border: 0 !important;
+  counter-increment: none !important;
+  list-style: none;
+}
+.doc-sheet .ProseMirror li.page-gap-li::before {
+  content: none !important;
+}
+
+.doc-sheet .ProseMirror h2,
+.doc-sheet .ProseMirror h3 {
+  scroll-margin-top: 1.5rem;
+}
+
+/* Formato añadido: resaltado, imágenes con pie, tareas, salto de página y búsqueda */
+.doc-sheet .ProseMirror mark {
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+.doc-sheet .ProseMirror figure.sc-figure {
+  margin: 0.12in 0;
+}
+.doc-sheet .ProseMirror figure.sc-figure[data-align='center'] {
+  margin-inline: auto;
+}
+.doc-sheet .ProseMirror figure.sc-figure[data-align='left'] {
+  margin-right: auto;
+  margin-left: 0;
+}
+.doc-sheet .ProseMirror figure.sc-figure[data-align='right'] {
+  margin-left: auto;
+  margin-right: 0;
+}
+.doc-sheet .ProseMirror figure.sc-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+.doc-sheet .ProseMirror figure.sc-figure figcaption {
+  margin-top: 4px;
+  font-size: 10px;
+  font-style: italic;
+  color: var(--sc-gray);
+  text-align: center;
+}
+.doc-sheet .ProseMirror ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0;
+}
+.doc-sheet .ProseMirror ul[data-type='taskList'] > li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.doc-sheet .ProseMirror ul[data-type='taskList'] > li > label {
+  margin-top: 2px;
+  flex: none;
+  user-select: none;
+}
+.doc-sheet .ProseMirror ul[data-type='taskList'] > li > div {
+  flex: 1;
+}
+.doc-sheet
+  .ProseMirror
+  ul[data-type='taskList']
+  > li:not(:has(> label))::before {
+  content: '☐';
+  font-size: 13px;
+  line-height: 1.3;
+  flex: none;
+  color: var(--sc-navy);
+}
+.doc-sheet
+  .ProseMirror
+  ul[data-type='taskList']
+  > li[data-checked='true']:not(:has(> label))::before {
+  content: '☑';
+}
+.doc-sheet
+  .ProseMirror
+  ul[data-type='taskList']
+  > li[data-checked='true']
+  > div {
+  color: var(--sc-gray);
+  text-decoration: line-through;
+}
+.doc-sheet .ProseMirror div[data-page-break] {
+  position: relative;
+  height: 0;
+  margin: 0;
+  pointer-events: none;
+}
+.doc-sheet .ProseMirror div[data-page-break]::after {
+  content: 'Salto de página';
+  position: absolute;
+  right: -0.8in;
+  top: -8px;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  font-family: var(--font-display);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-navy);
+  background: var(--sc-accent);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+.doc-sheet .ProseMirror div[data-page-break].ProseMirror-selectednode::after {
+  outline: 2px solid var(--sc-navy);
+}
+.doc-sheet .ProseMirror .search-match {
+  background: #fff3b0;
+  border-radius: 2px;
+}
+.doc-sheet .ProseMirror .search-current {
+  background: #ffc266;
+  outline: 2px solid #e39a1f;
+}
+.doc-sheet .ProseMirror img.ProseMirror-selectednode,
+.doc-sheet .ProseMirror figure.ProseMirror-selectednode {
+  outline: 2px solid var(--sc-accent-ink);
+  outline-offset: 2px;
+}
+
+/* Tablas con grosor y color de líneas elegidos por el usuario */
+.doc-sheet .ProseMirror [data-border] {
+  --bw: 1px;
+  --bc: var(--t-rule, #9aa0b8);
+}
+.doc-sheet .ProseMirror [data-border='1'] {
+  --bw: 1px;
+}
+.doc-sheet .ProseMirror [data-border='2'] {
+  --bw: 2px;
+}
+.doc-sheet .ProseMirror [data-border='3'] {
+  --bw: 3px;
+}
+.doc-sheet .ProseMirror [data-border='none'] {
+  --bw: 0px;
+}
+.doc-sheet .ProseMirror [data-border-color='navy'] {
+  --bc: var(--sc-navy);
+}
+.doc-sheet .ProseMirror [data-border-color='ink'] {
+  --bc: #1b1b3a;
+}
+.doc-sheet .ProseMirror [data-border] table {
+  border-collapse: collapse;
+}
+.doc-sheet .ProseMirror table[data-border] {
+  border-collapse: collapse;
+}
+.doc-sheet .ProseMirror [data-border] td,
+.doc-sheet .ProseMirror [data-border] th {
+  border: var(--bw) solid var(--bc);
+}
+.doc-sheet .ProseMirror [data-border] th:first-child,
+.doc-sheet .ProseMirror [data-border] th:last-child {
+  border-radius: 0;
+}
+
+/* Imágenes: tiradores para cambiar el tamaño arrastrando (solo en modo edición) */
+.doc-sheet .ProseMirror figure.sc-figure {
+  position: relative;
+}
+.doc-sheet .ProseMirror figure.sc-figure .sc-resize,
+.doc-sheet .ProseMirror figure.sc-figure .sc-resize-badge {
+  display: none;
+}
+.doc-sheet
+  .ProseMirror[contenteditable='true']
+  figure.sc-figure.ProseMirror-selectednode
+  .sc-resize {
+  display: block;
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 44px;
+  margin-top: -22px;
+  border-radius: 6px;
+  background: var(--sc-accent-ink);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px oklch(0 0 0 / 0.35);
+  cursor: ew-resize;
+  touch-action: none;
+  z-index: 3;
+}
+.doc-sheet .ProseMirror figure.sc-figure .sc-resize-l {
+  left: -6px;
+}
+.doc-sheet .ProseMirror figure.sc-figure .sc-resize-r {
+  right: -6px;
+}
+.doc-sheet .ProseMirror figure.sc-figure.is-resizing .sc-resize-badge {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  transform: translateX(-50%);
+  z-index: 3;
+  background: var(--sc-navy);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.doc-sheet .ProseMirror[contenteditable='true'] figure.sc-figure {
+  cursor: grab;
+}
+
+/* Asa para arrastrar bloques */
+.sc-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 26px;
+  border-radius: 6px;
+  color: var(--sc-gray);
+  cursor: grab;
+  background: transparent;
+  transition: background 0.15s;
+}
+.sc-drag-handle:hover {
+  background: oklch(0.24 0.14 275 / 0.08);
+  color: var(--sc-navy);
+}
+.sc-drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Organigrama, gráficos e índice automático */
+.doc-sheet .ProseMirror .sc-org {
+  margin: 0.14in 0;
+  text-align: center;
+  overflow-x: auto;
+  break-inside: avoid;
+}
+.doc-sheet .ProseMirror .sc-org ul {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  padding: 16px 0 0;
+  margin: 0;
+  list-style: none;
+}
+.doc-sheet .ProseMirror .sc-org > ul {
+  padding-top: 0;
+}
+.doc-sheet .ProseMirror .sc-org li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 5px 0;
+  margin: 0;
+  list-style: none;
+}
+.doc-sheet .ProseMirror .sc-org li::before,
+.doc-sheet .ProseMirror .sc-org li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  width: 50%;
+  height: 16px;
+  border-top: 1.5px solid var(--t-rule, #9aa0b8);
+}
+.doc-sheet .ProseMirror .sc-org li::after {
+  right: auto;
+  left: 50%;
+  border-left: 1.5px solid var(--t-rule, #9aa0b8);
+}
+.doc-sheet .ProseMirror .sc-org li:only-child::before,
+.doc-sheet .ProseMirror .sc-org li:only-child::after {
+  display: none;
+}
+.doc-sheet .ProseMirror .sc-org li:only-child {
+  padding-top: 16px;
+}
+.doc-sheet .ProseMirror .sc-org > ul > li:only-child {
+  padding-top: 0;
+}
+.doc-sheet .ProseMirror .sc-org li:first-child::before,
+.doc-sheet .ProseMirror .sc-org li:last-child::after {
+  border: 0 none;
+}
+.doc-sheet .ProseMirror .sc-org li:last-child::before {
+  border-right: 1.5px solid var(--t-rule, #9aa0b8);
+  border-radius: 0 5px 0 0;
+}
+.doc-sheet .ProseMirror .sc-org li:first-child::after {
+  border-radius: 5px 0 0 0;
+}
+.doc-sheet .ProseMirror .sc-org ul ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 16px;
+  border-left: 1.5px solid var(--t-rule, #9aa0b8);
+}
+.doc-sheet .ProseMirror .sc-org-node {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 92px;
+  padding: 6px 10px;
+  background: #fff;
+  border: 1.5px solid var(--t-navy, #1e1a6b);
+  border-radius: 8px;
+  line-height: 1.25;
+}
+.doc-sheet .ProseMirror .sc-org-node strong {
+  font-family: 'Sora', sans-serif;
+  font-size: 10px;
+  color: var(--t-navy, #1e1a6b);
+}
+.doc-sheet .ProseMirror .sc-org-node small {
+  font-size: 8.5px;
+  color: var(--t-gray, #6a70a0);
+}
+
+.doc-sheet .ProseMirror .sc-chart {
+  margin: 0.14in 0;
+  padding: 0.12in 0.16in;
+  background: #fff;
+  border: 1px solid rgba(30, 26, 107, 0.14);
+  border-radius: 8px;
+  break-inside: avoid;
+}
+.doc-sheet .ProseMirror .sc-chart .c-title {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--t-navy, #1e1a6b);
+  margin-bottom: 8px;
+}
+.doc-sheet .ProseMirror .sc-chart .c-row {
+  display: grid;
+  grid-template-columns: 1.5in 1fr 0.9in;
+  gap: 8px;
+  align-items: center;
+  margin: 4px 0;
+  font-size: 10.5px;
+}
+.doc-sheet .ProseMirror .sc-chart .c-track {
+  height: 12px;
+  background: var(--t-tint, #eef0f8);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.doc-sheet .ProseMirror .sc-chart .c-fill {
+  height: 100%;
+  background: var(--t-navy, #1e1a6b);
+  border-radius: 999px;
+}
+.doc-sheet .ProseMirror .sc-chart .c-val {
+  text-align: right;
+  color: var(--t-gray, #6a70a0);
+  font-variant-numeric: tabular-nums;
+}
+.doc-sheet .ProseMirror .sc-chart .c-cols {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 2in;
+}
+.doc-sheet .ProseMirror .sc-chart .c-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  font-size: 10px;
+  gap: 3px;
+  min-width: 0;
+}
+.doc-sheet .ProseMirror .sc-chart .c-bar {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  background: var(--t-tint, #eef0f8);
+  border-radius: 6px 6px 0 0;
+}
+.doc-sheet .ProseMirror .sc-chart .c-bar .c-fill {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+}
+.doc-sheet .ProseMirror .sc-chart .c-col .c-label {
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Gráficos nuevos (SVG): paletas y elementos. */
+.doc-sheet .ProseMirror .sc-chart[data-palette='tema'] {
+  --c0: var(--t-navy, #1e1a6b);
+  --c1: color-mix(
+    in srgb,
+    var(--t-accent, #9fc4ee) 62%,
+    var(--t-navy, #1e1a6b)
+  );
+  --c2: var(--t-gray, #6a70a0);
+  --c3: color-mix(in srgb, var(--t-accent, #9fc4ee) 75%, #000);
+  --c4: color-mix(in srgb, var(--t-navy, #1e1a6b) 62%, #fff);
+  --c5: color-mix(in srgb, var(--t-navy, #1e1a6b) 40%, var(--t-gray, #6a70a0));
+  --c6: color-mix(
+    in srgb,
+    var(--t-accent, #9fc4ee) 40%,
+    var(--t-navy, #1e1a6b)
+  );
+  --c7: color-mix(in srgb, var(--t-gray, #6a70a0) 70%, #000);
+}
+.doc-sheet .ProseMirror .sc-chart[data-palette='vivo'] {
+  --c0: #4f46e5;
+  --c1: #0891b2;
+  --c2: #d97706;
+  --c3: #e11d48;
+  --c4: #059669;
+  --c5: #7c3aed;
+  --c6: #ea580c;
+  --c7: #475569;
+}
+.doc-sheet .ProseMirror .sc-chart[data-palette='frio'] {
+  --c0: #1e3a8a;
+  --c1: #2563eb;
+  --c2: #0284c7;
+  --c3: #0e7490;
+  --c4: #0f766e;
+  --c5: #4f46e5;
+  --c6: #6366f1;
+  --c7: #475569;
+}
+.doc-sheet .ProseMirror .sc-chart[data-palette='calido'] {
+  --c0: #9a3412;
+  --c1: #c2410c;
+  --c2: #d97706;
+  --c3: #b45309;
+  --c4: #be123c;
+  --c5: #e11d48;
+  --c6: #a16207;
+  --c7: #78350f;
+}
+.doc-sheet .ProseMirror .sc-chart[data-palette='gris'] {
+  --c0: #1f2937;
+  --c1: #4b5563;
+  --c2: #64748b;
+  --c3: #6b7280;
+  --c4: #374151;
+  --c5: #475569;
+  --c6: #334155;
+  --c7: #94a3b8;
+}
+.doc-sheet .ProseMirror .sc-chart .s0 {
+  --c: var(--c0, #1e1a6b);
+}
+.doc-sheet .ProseMirror .sc-chart .s1 {
+  --c: var(--c1, #6e83bc);
+}
+.doc-sheet .ProseMirror .sc-chart .s2 {
+  --c: var(--c2, #6a70a0);
+}
+.doc-sheet .ProseMirror .sc-chart .s3 {
+  --c: var(--c3, #6f6dab);
+}
+.doc-sheet .ProseMirror .sc-chart .s4 {
+  --c: var(--c4, #9fc4ee);
+}
+.doc-sheet .ProseMirror .sc-chart .s5 {
+  --c: var(--c5, #4c4f7d);
+}
+.doc-sheet .ProseMirror .sc-chart .s6 {
+  --c: var(--c6, #4f5f9a);
+}
+.doc-sheet .ProseMirror .sc-chart .s7 {
+  --c: var(--c7, #4a4f70);
+}
+.doc-sheet .ProseMirror .sc-chart .c-sub {
+  font-size: 9.5px;
+  color: var(--t-gray, #6a70a0);
+  margin: -5px 0 8px;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg text {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .ta-m {
+  text-anchor: middle;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .ta-e {
+  text-anchor: end;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .ta-s {
+  text-anchor: start;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .tick {
+  fill: var(--t-gray, #6a70a0);
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .lbl {
+  fill: currentColor;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .val {
+  fill: currentColor;
+  font-size: 9.5px;
+  font-weight: 600;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .val.in {
+  fill: #fff;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .grid {
+  stroke: var(--t-rule, #c3c8dc);
+  stroke-opacity: 0.55;
+  stroke-width: 0.75;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .axis {
+  stroke: var(--t-gray, #6a70a0);
+  stroke-width: 1;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .bar {
+  fill: var(--c);
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .slice {
+  fill: var(--c);
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .line {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 2.25;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .area {
+  fill: var(--c);
+  fill-opacity: 0.16;
+  stroke: none;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .dot {
+  fill: #fff;
+  stroke: var(--c);
+  stroke-width: 2;
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .ctr {
+  font-size: 15px;
+  font-weight: 700;
+  fill: var(--t-navy, #1e1a6b);
+}
+.doc-sheet .ProseMirror .sc-chart .c-svg .ctr-sub {
+  font-size: 8.5px;
+  fill: var(--t-gray, #6a70a0);
+}
+.doc-sheet .ProseMirror .sc-chart .c-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 8px;
+  font-size: 10px;
+}
+.doc-sheet .ProseMirror .sc-chart .c-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.doc-sheet .ProseMirror .sc-chart .c-sw {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--c);
+  flex: none;
+}
+.doc-sheet .ProseMirror .sc-chart .c-lv {
+  color: var(--t-gray, #6a70a0);
+  font-variant-numeric: tabular-nums;
+}
+.doc-sheet .ProseMirror .sc-chart .c-note {
+  font-size: 8.5px;
+  color: var(--t-gray, #6a70a0);
+  margin-top: 6px;
+}
+
+.doc-sheet .ProseMirror .sc-toc {
+  margin: 0.14in 0;
+  padding: 0.1in 0.18in;
+  background: #fff;
+  border-left: 3px solid var(--t-accent, #9fc4ee);
+  border-radius: 0 8px 8px 0;
+  break-inside: avoid;
+}
+.doc-sheet .ProseMirror .sc-toc-title {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-navy, #1e1a6b);
+  margin-bottom: 4px;
+}
+.doc-sheet .ProseMirror .sc-toc-item {
+  font-size: 11px;
+  padding: 2px 0;
+}
+.doc-sheet .ProseMirror .sc-toc-l3 {
+  padding-left: 16px;
+  color: var(--t-gray, #6a70a0);
+}
+
+.doc-sheet .ProseMirror .sc-org.ProseMirror-selectednode,
+.doc-sheet .ProseMirror .sc-chart.ProseMirror-selectednode,
+.doc-sheet .ProseMirror .sc-toc.ProseMirror-selectednode {
+  outline: 2px solid var(--sc-accent-ink);
+  outline-offset: 2px;
+}
+.doc-sheet .ProseMirror[contenteditable='true'] .sc-org,
+.doc-sheet .ProseMirror[contenteditable='true'] .sc-chart {
+  cursor: pointer;
+}
+
+/* ---------- Editor en móvil: vista continua, sin marco de página ---------- */
+.sc-toolbar-row {
+  scrollbar-width: none;
+}
+.sc-toolbar-row::-webkit-scrollbar {
+  display: none;
+}
+@media (max-width: 767px) {
+  .sc-toolbar-row {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sc-toolbar-row > * {
+    flex: none;
+  }
+}
+@media (pointer: coarse) {
+  .sc-toolbar-row button {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+  }
+}
+.doc-sheet[data-compact='true'] {
+  width: 100% !important;
+  padding: 1.25rem 1.1rem 1.5rem !important;
+  box-shadow: none;
+}
+.doc-sheet[data-compact='true'] > .sheet-run-head,
+.doc-sheet[data-compact='true'] > .sheet-run-foot,
+.doc-sheet[data-compact='true'] .page-gap,
+.doc-sheet[data-compact='true'] .page-gap-row,
+.doc-sheet[data-compact='true'] .page-gap-li {
+  display: none !important;
+}
+.doc-sheet[data-compact='true'] .sheet-title {
+  font-size: 1.6rem;
+}
+.doc-sheet[data-compact='true'] .ProseMirror .tableWrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.doc-sheet[data-compact='true'] .ProseMirror img,
+.doc-sheet[data-compact='true'] .ProseMirror figure {
+  max-width: 100% !important;
+  height: auto;
+}
+
+/* ---------- Composición por tema en el editor (espejo del PDF) ---------- */
+.doc-sheet[data-h='bar'] .ProseMirror h2 {
+  display: block;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  font-weight: 800;
+  border-left: 4px solid var(--sc-accent);
+  padding-left: 10px;
+  line-height: 1.25;
+}
+.doc-sheet[data-h='bar'] .ProseMirror h2::after,
+.doc-sheet[data-h='plain'] .ProseMirror h2::after {
+  display: none;
+}
+.doc-sheet[data-h='plain'] .ProseMirror h2 {
+  display: block;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  font-weight: 800;
+  border-bottom: 1px solid var(--t-rule, var(--sc-line));
+  padding-bottom: 4px;
+}
+.doc-sheet[data-t='filled'] .ProseMirror th {
+  background: var(--sc-navy);
+  color: #fff;
+  border-bottom: none;
+}
+.doc-sheet[data-t='lines'] .ProseMirror th {
+  color: var(--sc-navy);
+  border-bottom: 1px solid var(--sc-navy);
+  padding: 6px 8px;
+}
+.doc-sheet[data-t='lines'] .ProseMirror td {
+  border-bottom: 0.5px solid var(--t-rule, var(--sc-line));
+  padding: 6px 8px;
+}
+.doc-sheet[data-z='0'] .ProseMirror tbody tr:nth-child(even) td {
+  background: transparent;
+}
+
+/* Cifras y totales (las clases las pone el plugin TableSemantics) */
+.doc-sheet .ProseMirror td.is-num,
+.doc-sheet .ProseMirror th.is-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.doc-sheet .ProseMirror tr.is-sub td {
+  font-weight: 700;
+  background: var(--t-tint, oklch(0.96 0.01 275)) !important;
+}
+.doc-sheet .ProseMirror tr.is-total td {
+  font-weight: 800;
+  color: var(--sc-navy);
+  background: var(--t-tint, oklch(0.96 0.01 275)) !important;
+  border-top: 1.5px solid var(--sc-navy);
+  border-bottom: 1.5px solid var(--sc-navy);
+  font-size: 12px;
+}
+
+/* Bloques destacados */
+div[data-callout][data-tone='key'] {
+  background: #fff;
+  border: none;
+  border-left: 4px solid var(--sc-accent);
+  border-radius: 0 8px 8px 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--sc-navy);
+  line-height: 1.4;
+}
+div[data-callout][data-tone='summary'] {
+  background: var(--t-tint, oklch(0.96 0.01 275));
+  border: none;
+  border-radius: 6px;
+}
+div[data-callout][data-tone='kpi'] {
+  background: #fff;
+  border: 1px solid var(--sc-line);
+  border-left: 4px solid var(--sc-navy);
+  border-radius: 0 8px 8px 0;
+}
+div[data-callout][data-tone='kpi'] > p:first-child {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--sc-navy);
+  margin: 0;
+}
+div[data-callout][data-tone='kpi'] > p:not(:first-child) {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--sc-gray);
+  margin: 3px 0 0;
+}
+
+/* Pies sin franja de color (corporativo: línea; interno: filete): el mismo pie, con el fondo transparente
+   y una regla que respeta los márgenes de la hoja */
+.doc-sheet[data-f='line'] .sheet-run-foot,
+.doc-sheet[data-f='minimal'] .sheet-run-foot,
+.doc-sheet[data-f='line'] .page-gap .pg-bar,
+.doc-sheet[data-f='minimal'] .page-gap .pg-bar {
+  position: relative;
+  background: transparent !important;
+  padding-top: 0.1in;
+}
+.doc-sheet[data-f='line'] .sheet-run-foot::before,
+.doc-sheet[data-f='line'] .page-gap .pg-bar::before,
+.doc-sheet[data-f='minimal'] .sheet-run-foot::before,
+.doc-sheet[data-f='minimal'] .page-gap .pg-bar::before {
+  content: '';
+  position: absolute;
+  top: 0.08in;
+  left: 0.85in;
+  right: 0.85in;
+  border-top: 1.5px solid var(--sc-navy);
+}
+.doc-sheet[data-f='minimal'] .sheet-run-foot::before,
+.doc-sheet[data-f='minimal'] .page-gap .pg-bar::before {
+  border-top: 0.5px solid var(--t-rule, var(--sc-line));
+}
+.doc-sheet[data-f='line'] .sheet-run-foot *,
+.doc-sheet[data-f='minimal'] .sheet-run-foot *,
+.doc-sheet[data-f='line'] .page-gap .pg-bar *,
+.doc-sheet[data-f='minimal'] .page-gap .pg-bar * {
+  color: var(--sc-gray) !important;
+}
+.doc-sheet[data-f='line'] .run-foot-club,
+.doc-sheet[data-f='line'] .pg-bar-club,
+.doc-sheet[data-f='minimal'] .run-foot-club,
+.doc-sheet[data-f='minimal'] .pg-bar-club {
+  font-size: 10px !important;
+  margin-top: 2px !important;
+  color: var(--sc-navy) !important;
+}
+
+/* Modo enfoque: solo el documento y su barra mínima */
+html[data-focus] [data-app-sidebar],
+html[data-focus] [data-app-topbar] {
+  display: none !important;
+}
+
+/* Vista continua (Ver → Vista continua): el texto corre sin marcas de página */
+.doc-sheet[data-continuous='true'] > .sheet-run-head,
+.doc-sheet[data-continuous='true'] > .sheet-run-foot,
+.doc-sheet[data-continuous='true'] .page-gap,
+.doc-sheet[data-continuous='true'] .page-gap-row,
+.doc-sheet[data-continuous='true'] .page-gap-li {
+  display: none !important;
+}
+
+/* El pie interno no lleva logo en la cabecera: solo texto (como el PDF) */
+.doc-sheet[data-f='minimal'] .sheet-run-head img,
+.doc-sheet[data-f='minimal'] .page-gap .pg-head img {
+  display: none;
+}
+
+/* ---------- Bloques de comunicación en el editor (espejo del PDF) ---------- */
+div[data-callout][data-tone='hero'] {
+  background: var(--sc-navy);
+  color: #fff;
+  border: none;
+  border-radius: 0;
+  padding: 0.26in 0.32in 0.3in;
+  margin: 0 0 0.24in;
+}
+div[data-callout][data-tone='hero'] > p {
+  margin: 0;
+  color: var(--t-on-navy, #dfe3f5);
+}
+div[data-callout][data-tone='hero'] > p:nth-child(1) {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 8.5px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--sc-accent);
+  margin-bottom: 0.1in;
+}
+div[data-callout][data-tone='hero'] > p:nth-child(2) {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  color: #fff;
+}
+div[data-callout][data-tone='hero'] > p:nth-child(2) em {
+  font-style: normal;
+  color: var(--sc-accent);
+}
+div[data-callout][data-tone='hero'] > p:nth-child(3) {
+  font-size: 12px;
+  margin-top: 0.1in;
+}
+div[data-callout][data-tone='eyebrow'] {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0.22in 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 8.5px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--sc-accent-ink);
+}
+div[data-callout][data-tone='eyebrow'] p {
+  margin: 0;
+}
+div[data-callout][data-tone='cta'] {
+  display: grid;
+  grid-template-columns: 1fr 2.5in;
+  column-gap: 0.3in;
+  align-items: center;
+  background: var(--sc-navy);
+  color: #fff;
+  border: none;
+  border-radius: 0;
+  padding: 0.2in 0.3in;
+  margin: 0.2in 0 0;
+}
+div[data-callout][data-tone='cta'] > p {
+  margin: 0;
+  text-align: right;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--t-on-navy, #dfe3f5);
+  grid-column: 2;
+}
+div[data-callout][data-tone='cta'] > p:first-child {
+  grid-column: 1;
+  grid-row: 1 / span 6;
+  text-align: left;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.3;
+  color: #fff;
+}
+.doc-sheet .ProseMirror table[data-border-color='paper'] {
+  --bc: var(--sc-paper);
+}
+.doc-sheet .ProseMirror table[data-border-color='paper'] td p:empty,
+.doc-sheet .ProseMirror table[data-border-color='paper'] td p.is-empty {
+  min-height: 0.24in;
+}
+
+/* Tema Campaña en el editor: sin bloque de título, títulos grandes y pie con etiqueta */
+.doc-sheet[data-tb='hide'] .sheet-head {
+  display: none;
+}
+.doc-sheet[data-h='display'] .ProseMirror h2 {
+  display: block;
+  font-size: 19px;
+  letter-spacing: -0.015em;
+  text-transform: none;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.doc-sheet[data-h='display'] .ProseMirror h2::after {
+  display: none;
+}
+
+/* Campaña: más aire entre párrafos, listas y tablas */
+.doc-sheet[data-h='display'] .ProseMirror p {
+  margin-bottom: 0.14in;
+  line-height: 1.65;
+}
+.doc-sheet[data-h='display'] .ProseMirror li {
+  margin-bottom: 0.07in;
+}
+.doc-sheet[data-h='display'] .ProseMirror .tableWrapper {
+  margin: 0.1in 0 0.26in;
+}
+.doc-sheet[data-h='display'] .ProseMirror li > p,
+.doc-sheet[data-h='display'] .ProseMirror th p,
+.doc-sheet[data-h='display'] .ProseMirror td p {
+  margin: 0;
+}
+.doc-sheet[data-h='display'] .ProseMirror table[data-border='none'] td p {
+  margin: 0 0 0.05in;
+}
+
+/* Tablas: los bordes se pueden arrastrar (derecho = ancho de columna, inferior = alto de fila) */
+.doc-sheet .ProseMirror .column-resize-handle {
+  width: 6px;
+  right: -3px;
+  border-radius: 3px;
+}
+.doc-sheet .ProseMirror.row-resize-cursor {
+  cursor: row-resize;
+}
+.doc-sheet .ProseMirror.row-resize-cursor td,
+.doc-sheet .ProseMirror.row-resize-cursor th {
+  cursor: row-resize;
+}
+
+/* Filas con alto propio: el texto se centra y el relleno no impide reducirlas */
+.doc-sheet .ProseMirror tr[style*='height'] > td,
+.doc-sheet .ProseMirror tr[style*='height'] > th {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  vertical-align: middle;
+}

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Procedimiento</title>
+    <style>
+      :root {
+        --navy: #1e1a6b;
+        --sky: #9fc4ee;
+        --paper: #faf9f6;
+      }
+      @page {
+        size: A4;
+        margin: 0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background: #eee;
+      }
+      .page {
+        width: 210mm;
+        min-height: 297mm;
+        background: #fff;
+        margin: 0 auto 20px;
+        position: relative;
+        padding: 18mm;
+      }
+      .cover {
+        background: linear-gradient(135deg, var(--navy) 0%, #3a2fb5 100%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .cover .brand {
+        font-weight: 800;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-size: 12px;
+      }
+      .cover h1 {
+        font-size: 54px;
+        line-height: 1;
+        margin: 0;
+      }
+      .cover h1 em {
+        color: var(--sky);
+        font-style: normal;
+      }
+      .cover .sub {
+        font-size: 16px;
+        opacity: 0.85;
+        max-width: 420px;
+      }
+      .meta {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.3);
+        padding-top: 16px;
+      }
+      .meta dt {
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--sky);
+      }
+      .meta dd {
+        margin: 4px 0 0;
+        font-size: 13px;
+      }
+      h2 {
+        color: var(--navy);
+        font-size: 22px;
+      }
+      .step {
+        display: flex;
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid #ddd;
+      }
+      .step .n {
+        font-weight: 800;
+        color: var(--navy);
+        font-size: 20px;
+        width: 30px;
+      }
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .kpi {
+        border: 1px solid #ddd;
+        border-left: 4px solid var(--navy);
+        padding: 12px;
+      }
+      .kpi b {
+        display: block;
+        font-size: 26px;
+        color: var(--navy);
+      }
+      .footer {
+        position: absolute;
+        left: 18mm;
+        right: 18mm;
+        bottom: 10mm;
+        font-size: 9px;
+        color: #888;
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="page cover">
+      <div class="brand">Sport City Club</div>
+      <div>
+        <div
+          class="eyebrow"
+          style="
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #9fc4ee;
+          "
+        >
+          Procedimiento operativo
+        </div>
+        <h1>Gestión de <em>proveedores.</em></h1>
+        <p class="sub">
+          Cómo evaluamos, seleccionamos y pagamos a quienes trabajan con el
+          club.
+        </p>
+      </div>
+      <dl class="meta">
+        <div>
+          <dt>Versión</dt>
+          <dd>1.0</dd>
+        </div>
+        <div>
+          <dt>Fecha</dt>
+          <dd>Septiembre 2026</dd>
+        </div>
+        <div>
+          <dt>Área</dt>
+          <dd>Compras</dd>
+        </div>
+        <div>
+          <dt>Autor</dt>
+          <dd>Administración</dd>
+        </div>
+      </dl>
+    </section>
+    <section class="page">
+      <h2>1. Objetivo</h2>
+      <p>Establecer un proceso claro para seleccionar proveedores.</p>
+      <div class="kpis">
+        <div class="kpi"><b>3</b>cotizaciones mínimas</div>
+        <div class="kpi"><b>48 h</b>respuesta máxima</div>
+        <div class="kpi"><b>30 días</b>plazo de pago</div>
+      </div>
+      <h2>2. Pasos</h2>
+      <div class="step">
+        <div class="n">1</div>
+        <div><b>Solicitar cotizaciones.</b><br />Pida al menos tres.</div>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <div><b>Comparar.</b><br />Use el cuadro comparativo.</div>
+      </div>
+      <div class="footer">
+        <span>Sport City Club · Procedimiento</span><span>02</span>
+      </div>
+    </section>
+  </body>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Ficha</title>
+    <style>
+      body {
+        font-family: Poppins, sans-serif;
+        color: #1b1b3a;
+      }
+      .hero {
+        background: #1e1a6b;
+        color: #fff;
+        padding: 24px 28px;
+        border-radius: 6px;
+      }
+      .hero .kicker {
+        font-size: 9px;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: #9fc4ee;
+      }
+      .hero h1 {
+        font-size: 32px;
+        margin: 6px 0;
+      }
+      .hero h1 span {
+        color: #9fc4ee;
+      }
+      .label {
+        font-size: 9px;
+        letter-spacing: 0.25em;
+        color: #3f78b5;
+        text-transform: uppercase;
+        margin-top: 20px;
+      }
+      .cards {
+        display: flex;
+        gap: 12px;
+      }
+      .card {
+        flex: 1;
+        padding: 16px;
+        background: #d7e9fb;
+        border-radius: 6px;
+      }
+      .card.dark {
+        background: #1e1a6b;
+        color: #fff;
+      }
+      .card .big {
+        font-size: 30px;
+        font-weight: 700;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        background: #1e1a6b;
+        color: #fff;
+        padding: 8px;
+        text-align: left;
+      }
+      td {
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+      }
+      td.hl {
+        background: #d7e9fb;
+        font-weight: 700;
+      }
+      .note {
+        background: #e3f6e8;
+        border: 1px solid #b7e2c4;
+        padding: 12px;
+        border-radius: 6px;
+      }
+      .cta {
+        background: #1e1a6b;
+        color: #fff;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hero">
+      <div class="kicker">Programa de fidelización · Membresías</div>
+      <h1>Un pago. <span>Todo el año.</span></h1>
+      <p>Con su membresía su descuento se mantiene.</p>
+    </div>
+    <div class="label">Nuestro compromiso</div>
+    <h2>Su lealtad, premiada todo el año</h2>
+    <p>Nuestros clientes son el corazón de <b>Sport City Club</b>.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="label">Clásica · US$ 90</div>
+        <div class="big">10 %</div>
+        <div>de descuento en canchas</div>
+      </div>
+      <div class="card dark">
+        <div class="label">Gold · US$ 120</div>
+        <div class="big">15 %</div>
+        <div>en canchas + 7 % en bar</div>
+      </div>
+    </div>
+    <table>
+      <tr>
+        <th>Concepto</th>
+        <th>Regular</th>
+        <th>Clásica</th>
+      </tr>
+      <tr>
+        <td>Cancha noche</td>
+        <td>C$ 1,800</td>
+        <td class="hl">C$ 1,620</td>
+      </tr>
+    </table>
+    <div class="note">
+      <b>Ejemplo práctico:</b> un equipo ahorra C$ 5,400 al mes.
+    </div>
+    <div class="cta">
+      <div>Un solo pago al año.</div>
+      <div>5827 1796<br />www.sportcitynic.com</div>
+    </div>
+  </body>
+</html>
