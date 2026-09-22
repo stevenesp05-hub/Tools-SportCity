@@ -45,7 +45,11 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { EditorState } from '@tiptap/pm/state'
 import { insertPageBreak, signaturesContent } from '#/lib/editor-extensions'
 import type { EditorView } from '@tiptap/pm/view'
-import { TableMap, columnResizingPluginKey } from '@tiptap/pm/tables'
+import {
+  TableMap,
+  columnResizingPluginKey,
+  selectedRect,
+} from '@tiptap/pm/tables'
 import type { Node as PMNode } from '@tiptap/pm/model'
 import {
   cellRef,
@@ -1579,6 +1583,71 @@ export function applyColumnWidth(
     })
   }
   if (tr.docChanged) editor.view.dispatch(tr)
+}
+
+const TABLE_MIN_COL = 30
+
+/**
+ * Inserta una columna (antes o después de la seleccionada) sin ensanchar la tabla: le quita un poco
+ * de ancho a cada columna existente para hacerle sitio a la nueva, igual que al arrastrar un borde
+ * interior. Sin esto, la columna nueva se queda sin ancho explícito (la inserta así prosemirror-tables)
+ * y, en cuanto se toca cualquier borde, la tabla se sale de la página: sin un ancho fijado, el motor de
+ * tablas le da un mínimo aparte que se SUMA al de las demás en vez de restárselo.
+ */
+export function insertTableColumn(editor: Editor, dir: 'before' | 'after') {
+  if (!editor.isActive('table')) return false
+  const { state, view } = editor
+  let rect
+  try {
+    rect = selectedRect(state)
+  } catch {
+    return false
+  }
+  const cellDom = view.domAtPos(state.selection.from).node
+  const el = cellDom instanceof HTMLElement ? cellDom : cellDom.parentElement
+  const table = el?.closest('table')
+  const firstRow = table?.rows.item(0)
+  if (!table || !firstRow || firstRow.cells.length === 0) return false
+  freezeColumnWidths(view, table)
+  const widths = [...firstRow.cells].map((c) => c.getBoundingClientRect().width)
+  const total = widths.reduce((a, b) => a + b, 0)
+  const n = widths.length
+  // Si la tabla ya se salía de los márgenes (p. ej. por columnas insertadas antes de este arreglo),
+  // se aprovecha para encajarla de vuelta en vez de conservar el desbordamiento.
+  const pageWidth = view.dom.getBoundingClientRect().width
+  const target = Math.min(total, pageWidth)
+
+  const inserted =
+    dir === 'before'
+      ? editor.chain().focus().addColumnBefore().run()
+      : editor.chain().focus().addColumnAfter().run()
+  if (!inserted) return false
+
+  const insertAt = Math.min(
+    Math.max(dir === 'before' ? rect.left : rect.right, 0),
+    n,
+  )
+  const newWidth = Math.max(TABLE_MIN_COL, Math.round(target / (n + 1)))
+  const scale = total > 0 ? Math.max(0, (target - newWidth) / total) : 1
+  const shrunk = widths.map((w) =>
+    Math.max(TABLE_MIN_COL, Math.round(w * scale)),
+  )
+  const finalWidths = [
+    ...shrunk.slice(0, insertAt),
+    newWidth,
+    ...shrunk.slice(insertAt),
+  ]
+
+  const afterDom = editor.view.domAtPos(editor.state.selection.from).node
+  const afterEl =
+    afterDom instanceof HTMLElement ? afterDom : afterDom.parentElement
+  const afterTable = afterEl?.closest('table')
+  const positions = afterTable ? tableRowPositions(editor, afterTable) : null
+  if (positions)
+    finalWidths.forEach((w, i) =>
+      applyColumnWidth(editor, positions.tablePos, i, w),
+    )
+  return true
 }
 
 /** Fija el alto (px) de una fila concreta (posición del nodo `tableRow`); `null` = automático. */

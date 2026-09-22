@@ -1,6 +1,15 @@
 import { Link } from '@tanstack/react-router'
-import { CalendarClock, Clock, Star } from 'lucide-react'
+import {
+  AlarmClock,
+  CalendarClock,
+  ClipboardCheck,
+  Clock,
+  Megaphone,
+  Star,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { DocThumbnail } from '#/components/documents/DocThumbnail'
+import { EmptyState } from '#/components/documents/EmptyState'
 import {
   StatusBadge,
   formatDueDate,
@@ -9,6 +18,46 @@ import {
 import { timeAgo } from '#/lib/format'
 import { cn } from '#/lib/utils'
 import type { HomeDocument } from '#/server/library'
+
+/** Cifra de un vistazo: número grande, etiqueta y un tono de color (los mismos que los avisos del sistema). */
+function StatTile({
+  icon: Icon,
+  value,
+  label,
+  tone,
+}: {
+  icon: LucideIcon
+  value: number
+  label: string
+  tone: 'info' | 'warning' | 'success' | 'neutral'
+}) {
+  const TONE_CLASS: Record<typeof tone, string> = {
+    info: 'bg-info-soft text-info',
+    warning: 'bg-warning-soft text-warning',
+    success: 'bg-success-soft text-success',
+    neutral: 'bg-secondary text-primary',
+  }
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5">
+      <span
+        className={cn(
+          'flex size-10 flex-none items-center justify-center rounded-lg',
+          TONE_CLASS[tone],
+        )}
+      >
+        <Icon className="size-5" />
+      </span>
+      <span className="min-w-0">
+        <span className="block font-display text-2xl leading-none text-foreground">
+          {value.toLocaleString('es-NI')}
+        </span>
+        <span className="mt-1 block truncate text-xs text-muted-foreground">
+          {label}
+        </span>
+      </span>
+    </div>
+  )
+}
 
 function MiniCard({ doc }: { doc: HomeDocument }) {
   return (
@@ -46,7 +95,7 @@ function Rail({
   empty,
 }: {
   title: string
-  icon: typeof Star
+  icon: LucideIcon
   documents: HomeDocument[]
   empty: string
 }) {
@@ -57,9 +106,7 @@ function Rail({
         {title}
       </h2>
       {documents.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border bg-card/50 px-4 py-5 text-sm text-muted-foreground">
-          {empty}
-        </p>
+        <EmptyState icon={Icon}>{empty}</EmptyState>
       ) : (
         <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
           {documents.map((doc) => (
@@ -79,9 +126,9 @@ function DueList({ documents }: { documents: HomeDocument[] }) {
         Próximos vencimientos
       </h2>
       {documents.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border bg-card/50 px-4 py-5 text-sm text-muted-foreground">
+        <EmptyState icon={CalendarClock}>
           Nada por vencer en los próximos 30 días.
-        </p>
+        </EmptyState>
       ) : (
         <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
           {documents.map((doc) => (
@@ -128,18 +175,25 @@ function DueList({ documents }: { documents: HomeDocument[] }) {
 
 export function HomeSections({
   userName,
+  featured,
   favorites,
   recents,
   due,
+  pendingReviews,
 }: {
   userName: string
+  /** Destacados por un administrador para todo el mundo (no depende de los favoritos de cada persona). */
+  featured: HomeDocument[]
   favorites: HomeDocument[]
   recents: HomeDocument[]
   due: HomeDocument[]
+  /** Revisiones pendientes asignadas a mí. */
+  pendingReviews: number
 }) {
   const hour = new Date().getHours()
   const greeting =
     hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
+  const overdueCount = due.filter((d) => isOverdue(d.due_date)).length
   return (
     <div className="mb-8 space-y-7">
       <div>
@@ -150,6 +204,40 @@ export function HomeSections({
           Sigue donde lo dejaste o entra en un espacio.
         </p>
       </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatTile
+          icon={ClipboardCheck}
+          value={pendingReviews}
+          label="Por revisar"
+          tone="info"
+        />
+        <StatTile
+          icon={AlarmClock}
+          value={overdueCount}
+          label="Vencidos"
+          tone="warning"
+        />
+        <StatTile
+          icon={Star}
+          value={favorites.length}
+          label="Favoritos"
+          tone="success"
+        />
+        <StatTile
+          icon={Megaphone}
+          value={featured.length}
+          label="Destacados"
+          tone="neutral"
+        />
+      </div>
+      {featured.length > 0 && (
+        <Rail
+          title="Destacados"
+          icon={Megaphone}
+          documents={featured}
+          empty=""
+        />
+      )}
       <Rail
         title="Recientes"
         icon={Clock}

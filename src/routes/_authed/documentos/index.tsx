@@ -43,9 +43,11 @@ function DocumentosRoot() {
             (user?.email ?? '').split('@')[0].replace(/[._]/g, ' ') ||
             'bienvenido'
           }
+          featured={home.featured}
           favorites={home.favorites}
           recents={home.recents}
           due={home.due}
+          pendingReviews={home.pendingReviews}
         />
       }
       onCreateFolder={handleCreateFolder}

@@ -116,9 +116,14 @@ export function NotificationsBell() {
           </div>
         </div>
         {data.items.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-            No tienes avisos pendientes.
-          </p>
+          <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+              <Bell className="size-4.5" />
+            </span>
+            <p className="text-sm text-muted-foreground">
+              No tienes avisos pendientes.
+            </p>
+          </div>
         ) : (
           <ul className="max-h-96 divide-y divide-border overflow-y-auto">
             {data.items.map((item) => {

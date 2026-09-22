@@ -48,7 +48,11 @@ import {
   LINE_HEIGHTS,
 } from '#/components/documents/EditorToolbar'
 import { LINK_EVENT } from '#/components/documents/SelectionBubble'
-import { ALL_BLOCKS, moveBlock } from '#/components/documents/editor-extras'
+import {
+  ALL_BLOCKS,
+  insertTableColumn,
+  moveBlock,
+} from '#/components/documents/editor-extras'
 import { DOC_THEMES, THEME_INFO } from '#/lib/doc-themes'
 import type { DocTheme } from '#/lib/doc-themes'
 import { downloadFile } from '#/lib/download'
@@ -577,13 +581,13 @@ export const DocumentMenuBar = memo(function DocumentMenuBar(props: Props) {
           <MenubarLabel>Columnas</MenubarLabel>
           <MenubarItem
             disabled={off || !inTable}
-            onSelect={run((e) => chain(e).addColumnBefore().run())}
+            onSelect={run((e) => insertTableColumn(e, 'before'))}
           >
             Insertar columna a la izquierda
           </MenubarItem>
           <MenubarItem
             disabled={off || !inTable}
-            onSelect={run((e) => chain(e).addColumnAfter().run())}
+            onSelect={run((e) => insertTableColumn(e, 'after'))}
           >
             Insertar columna a la derecha
           </MenubarItem>

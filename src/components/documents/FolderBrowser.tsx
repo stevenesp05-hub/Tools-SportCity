@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useRouter } from '@tanstack/react-router'
 import {
-  ChevronRight,
   Copy,
   Download,
   Folder,
@@ -28,6 +27,7 @@ import {
 } from '#/lib/permissions'
 import type { Role } from '#/lib/permissions'
 import { deleteDocuments, deleteFolder, renameFolder } from '#/server/documents'
+import { folderChainOf } from '#/lib/breadcrumbs'
 import { importDocument } from '#/server/import'
 import { downloadFile } from '#/lib/download'
 import type { DocumentSummary, FolderRow } from '#/server/documents'
@@ -68,6 +68,7 @@ import {
 } from '#/components/documents/DocumentViews'
 import { QuickLookDialog } from '#/components/documents/QuickLookDialog'
 import { EmptyFolder } from '#/components/documents/EmptyFolder'
+import { EmptyState } from '#/components/documents/EmptyState'
 import type { DocTheme } from '#/lib/doc-themes'
 import { cn } from '#/lib/utils'
 
@@ -117,17 +118,10 @@ export function FolderBrowser({
   const { confirm, prompt } = useDialogs()
   const byId = useMemo(() => new Map(folders.map((f) => [f.id, f])), [folders])
 
-  const breadcrumb = useMemo(() => {
-    const chain: FolderRow[] = []
-    let cursor = currentFolderId
-    while (cursor) {
-      const folder = byId.get(cursor)
-      if (!folder) break
-      chain.unshift(folder)
-      cursor = folder.parent_id
-    }
-    return chain
-  }, [byId, currentFolderId])
+  const breadcrumb = useMemo(
+    () => folderChainOf(folders, currentFolderId),
+    [folders, currentFolderId],
+  )
   const currentFolder = breadcrumb.at(-1) ?? null
 
   const [sort, setSort] = useState<SortKey>('name')
@@ -312,7 +306,9 @@ export function FolderBrowser({
   async function deleteFolderConfirm(folder: FolderRow) {
     const ok = await confirm({
       title: `¿Eliminar la carpeta "${folder.name}"?`,
-      description: 'Solo se puede eliminar si está vacía.',
+      // Mismo aviso que da el servidor si no está vacía (documents.ts): se ve antes de intentarlo.
+      description:
+        'Solo se puede eliminar si está vacía. Mueve o elimina primero su contenido.',
       confirmLabel: 'Eliminar',
       destructive: true,
     })
@@ -414,7 +410,9 @@ export function FolderBrowser({
         )}
         {canEdit && (
           <DropdownMenuItem
-            onSelect={() => setMoveTarget({ kind: 'documents', ids: [doc.id] })}
+            onSelect={() =>
+              setMoveTarget({ kind: 'documents', ids: [doc.id] })
+            }
           >
             <FolderInput className="size-4" />
             Mover a…
@@ -583,98 +581,85 @@ export function FolderBrowser({
           <h2 className="text-sm font-display uppercase tracking-wide text-muted-foreground">
             Documentos y archivos
           </h2>
+        ) : currentFolder ? (
+          // La ruta completa (Inicio › …) ya vive en la barra superior; aquí solo el título de esta carpeta.
+          <h1 className="min-w-0 truncate text-xl font-display text-foreground">
+            {currentFolder.name}
+          </h1>
         ) : (
-          <nav className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
-            <Link
-              to="/documentos"
-              className="rounded-md px-1.5 py-0.5 font-medium hover:bg-secondary hover:text-foreground"
-            >
-              Inicio
-            </Link>
-
-            {breadcrumb.map((folder) => (
-              <span key={folder.id} className="flex items-center gap-1">
-                <ChevronRight className="size-3.5" />
-                <Link
-                  to="/documentos/$folderId"
-                  params={{ folderId: folder.id }}
-                  className="rounded-md px-1.5 py-0.5 font-medium hover:bg-secondary hover:text-foreground [&.is-active]:text-foreground"
-                  activeProps={{ className: 'is-active' }}
-                >
-                  {folder.name}
-                </Link>
-              </span>
-            ))}
-          </nav>
+          <span />
         )}
 
         <div className="flex flex-wrap items-center gap-2">
           {currentFolder && !embedded && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  title="Descargar carpeta"
-                  aria-label="Descargar carpeta"
-                >
-                  <Download className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onSelect={() =>
-                    void downloadFile(
-                      `/api/carpetas/${currentFolder.id}/zip?formato=docx`,
-                      {
-                        fallbackName: `${currentFolder.name}.zip`,
-                        loading: 'Preparando el ZIP…',
-                      },
-                    )
-                  }
-                >
-                  Toda la carpeta en Word (.zip)
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={() =>
-                    void downloadFile(
-                      `/api/carpetas/${currentFolder.id}/zip?formato=html`,
-                      {
-                        fallbackName: `${currentFolder.name}.zip`,
-                        loading: 'Preparando el ZIP…',
-                      },
-                    )
-                  }
-                >
-                  Toda la carpeta en HTML (.zip)
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          {currentFolder && !embedded && (canEdit || canDelete) && (
             <>
-              {canEdit && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  title="Renombrar carpeta"
-                  onClick={() => renameFolderPrompt(currentFolder)}
-                >
-                  <Pencil className="size-4" />
-                </Button>
-              )}
-              {canDelete && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 text-destructive"
-                  title="Eliminar carpeta (debe estar vacía)"
-                  onClick={() => deleteFolderConfirm(currentFolder)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    title="Acciones de esta carpeta"
+                    aria-label="Acciones de esta carpeta"
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      void downloadFile(
+                        `/api/carpetas/${currentFolder.id}/zip?formato=docx`,
+                        {
+                          fallbackName: `${currentFolder.name}.zip`,
+                          loading: 'Preparando el ZIP…',
+                        },
+                      )
+                    }
+                  >
+                    <Download className="size-4" />
+                    Toda la carpeta en Word (.zip)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      void downloadFile(
+                        `/api/carpetas/${currentFolder.id}/zip?formato=html`,
+                        {
+                          fallbackName: `${currentFolder.name}.zip`,
+                          loading: 'Preparando el ZIP…',
+                        },
+                      )
+                    }
+                  >
+                    <Download className="size-4" />
+                    Toda la carpeta en HTML (.zip)
+                  </DropdownMenuItem>
+                  {canEdit && (
+                    <DropdownMenuItem
+                      onSelect={() => renameFolderPrompt(currentFolder)}
+                    >
+                      <Pencil className="size-4" />
+                      Renombrar
+                    </DropdownMenuItem>
+                  )}
+                  {canDelete && <DropdownMenuSeparator />}
+                  {canDelete && (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onSelect={() => deleteFolderConfirm(currentFolder)}
+                    >
+                      <Trash2 className="size-4" />
+                      Eliminar
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {/* Lo de arriba actúa SOBRE esta carpeta; lo que sigue crea cosas DENTRO de ella. */}
+              {canCreate && (
+                <div
+                  className="mx-0.5 h-5 w-px flex-none bg-border"
+                  aria-hidden
+                />
               )}
             </>
           )}
@@ -753,7 +738,8 @@ export function FolderBrowser({
                 }}
               />
               <Button
-                variant="outline"
+                // Es la acción menos frecuente del grupo: un tono más discreto que "Nueva carpeta".
+                variant="ghost"
                 size="sm"
                 disabled={importing !== null}
                 onClick={() => importInputRef.current?.click()}
@@ -776,6 +762,9 @@ export function FolderBrowser({
                 onPointerEnter={ensureTemplates}
                 onFocus={ensureTemplates}
                 size="sm"
+                // La acción principal de la barra: un poco de sombra para que destaque sobre las
+                // demás (que ya llevan la suya de fábrica al ser "outline").
+                className="shadow-sm"
               >
                 <Plus className="size-4" />
                 Nuevo documento
@@ -952,11 +941,11 @@ export function FolderBrowser({
       )}
 
       {subfolders.length === 0 && !onCreateDocument && (
-        <p className="text-sm text-muted-foreground">
+        <EmptyState icon={Folder}>
           {canCreate
             ? 'Todavía no hay carpetas.'
             : 'No tienes carpetas disponibles todavía. Un administrador debe darte acceso.'}
-        </p>
+        </EmptyState>
       )}
 
       <Dialog

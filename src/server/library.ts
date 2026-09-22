@@ -243,6 +243,29 @@ export const updateDocumentAccess = createServerFn({ method: 'POST' })
     return { ok: true as const }
   })
 
+/**
+ * Destaca (o quita de destacado) un documento para todo el mundo: aparece en el inicio de cualquiera
+ * que lo vea, sin que cada persona tenga que marcarlo como favorito por su cuenta. Solo el administrador.
+ */
+export const setFeatured = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator(z.object({ id: z.string().min(1), featured: z.boolean() }))
+  .handler(async ({ context, data }) => {
+    assertPermission(context.user.role, 'tools.admin.gestionar_acceso')
+    const { error } = await context.supabase
+      .from('documents')
+      .update({ featured: data.featured })
+      .eq('id', data.id)
+    if (error)
+      throw new Error(
+        /featured/.test(error.message) &&
+          /does not exist|schema cache|could not find/i.test(error.message)
+          ? 'Falta ejecutar la migración 0023_documentos_destacados.sql en Supabase.'
+          : error.message,
+      )
+    return { ok: true as const }
+  })
+
 // ---------- Favoritos, recientes, vencimientos ----------
 
 export const toggleFavorite = createServerFn({ method: 'POST' })
@@ -309,43 +332,64 @@ export const getHome = createServerFn({ method: 'GET' })
     async ({
       context,
     }): Promise<{
+      featured: HomeDocument[]
       favorites: HomeDocument[]
       recents: HomeDocument[]
       due: HomeDocument[]
+      /** Revisiones pendientes asignadas a mí: para la cifra rápida del inicio. */
+      pendingReviews: number
     }> => {
       const inThirtyDays = new Date(Date.now() + 30 * 24 * 3600 * 1000)
         .toISOString()
         .slice(0, 10)
 
-      const [favorites, recents, due] = await Promise.all([
-        context.supabase
-          .from('favorites')
-          .select(`document:documents(${HOME_DOC_FIELDS})`)
-          .eq('user_id', context.user.id)
-          .order('created_at', { ascending: false })
-          .limit(12),
-        context.supabase
-          .from('document_views')
-          .select(`document:documents(${HOME_DOC_FIELDS})`)
-          .eq('user_id', context.user.id)
-          .order('viewed_at', { ascending: false })
-          .limit(10),
-        context.supabase
-          .from('documents')
-          .select(HOME_DOC_FIELDS)
-          .is('deleted_at', null)
-          .not('due_date', 'is', null)
-          .lte('due_date', inThirtyDays)
-          .order('due_date')
-          .limit(10),
-      ])
+      const [featured, favorites, recents, due, pendingReviews] =
+        await Promise.all([
+          // Sin la migración 0023 la columna no existe: el error deja `data` en null y aquí queda vacío.
+          context.supabase
+            .from('documents')
+            .select(HOME_DOC_FIELDS)
+            .is('deleted_at', null)
+            .eq('featured', true)
+            .order('updated_at', { ascending: false })
+            .limit(12),
+          context.supabase
+            .from('favorites')
+            .select(`document:documents(${HOME_DOC_FIELDS})`)
+            .eq('user_id', context.user.id)
+            .order('created_at', { ascending: false })
+            .limit(12),
+          context.supabase
+            .from('document_views')
+            .select(`document:documents(${HOME_DOC_FIELDS})`)
+            .eq('user_id', context.user.id)
+            .order('viewed_at', { ascending: false })
+            .limit(10),
+          context.supabase
+            .from('documents')
+            .select(HOME_DOC_FIELDS)
+            .is('deleted_at', null)
+            .not('due_date', 'is', null)
+            .lte('due_date', inThirtyDays)
+            .order('due_date')
+            .limit(10),
+          context.supabase
+            .from('document_reviews')
+            .select('id', { count: 'exact', head: true })
+            .eq('reviewer_id', context.user.id)
+            .eq('status', 'pending'),
+        ])
 
       return {
+        featured: ((featured.data ?? []) as unknown as RawHomeDoc[]).map(
+          ({ deleted_at: _deleted, ...doc }) => doc,
+        ),
         favorites: toHomeDocuments(favorites.data ?? []),
         recents: toHomeDocuments(recents.data ?? []),
         due: ((due.data ?? []) as unknown as RawHomeDoc[]).map(
           ({ deleted_at: _deleted, ...doc }) => doc,
         ),
+        pendingReviews: pendingReviews.count ?? 0,
       }
     },
   )

@@ -148,6 +148,8 @@ export type DocumentSummary = {
   tags: string[]
   visible_roles: Role[] | null
   is_favorite: boolean
+  /** Destacado por un administrador: aparece en el inicio de todo el mundo. */
+  featured: boolean
   /** Quién guardó la versión actual. */
   author: string | null
 }
@@ -159,14 +161,25 @@ export const listDocuments = createServerFn({ method: 'GET' })
     // Los favoritos del usuario (pocos) se piden a la vez que los documentos, sin esperar a sus ids.
     const [{ data: documents, error }, { data: favorites }] = await Promise.all(
       [
-        context.supabase
-          .from('documents')
-          .select(
-            'id, title, folder_id, updated_at, status, due_date, tags, visible_roles, version:document_versions!documents_current_version_id_fkey(profiles(full_name, email))',
+        (async () => {
+          const select = (columns: string) =>
+            context.supabase
+              .from('documents')
+              .select(columns)
+              .eq('folder_id', data.folderId)
+              .is('deleted_at', null)
+              .order('title')
+          // Sin la migración 0023 no existe `featured`: se reintenta sin ella.
+          const withFeatured = await select(
+            'id, title, folder_id, updated_at, status, due_date, tags, visible_roles, featured, version:document_versions!documents_current_version_id_fkey(profiles(full_name, email))',
           )
-          .eq('folder_id', data.folderId)
-          .is('deleted_at', null)
-          .order('title'),
+          return withFeatured.error &&
+            isMissingColumn(withFeatured.error.message)
+            ? select(
+                'id, title, folder_id, updated_at, status, due_date, tags, visible_roles, version:document_versions!documents_current_version_id_fkey(profiles(full_name, email))',
+              )
+            : withFeatured
+        })(),
         context.supabase
           .from('favorites')
           .select('document_id')
@@ -180,7 +193,8 @@ export const listDocuments = createServerFn({ method: 'GET' })
     )
 
     type Person = { full_name: string | null; email: string }
-    type Raw = Omit<DocumentSummary, 'is_favorite' | 'author'> & {
+    type Raw = Omit<DocumentSummary, 'is_favorite' | 'author' | 'featured'> & {
+      featured?: boolean
       version:
         | { profiles: Person | Person[] | null }
         | Array<{ profiles: Person | Person[] | null }>
@@ -191,6 +205,7 @@ export const listDocuments = createServerFn({ method: 'GET' })
       const person = Array.isArray(v?.profiles) ? v.profiles[0] : v?.profiles
       return {
         ...d,
+        featured: d.featured === true,
         author: person?.full_name ?? person?.email ?? null,
         is_favorite: favoriteIds.has(d.id),
       }
@@ -474,6 +489,8 @@ export type DocumentDetail = {
   approved_at: string | null
   approver: { full_name: string | null; email: string } | null
   is_favorite: boolean
+  /** Destacado por un administrador: aparece en el inicio de todo el mundo. */
+  featured: boolean
   theme: DocTheme
   /** Sin el HTML: la página pinta el JSON del editor y el HTML solo se pide al comparar o previsualizar versiones. */
   current_version: {
@@ -496,7 +513,7 @@ export type DocumentVersionSummary = {
 const DETAIL_COLUMNS =
   'id, title, folder_id, folder:folders(name), updated_at, status, due_date, tags, visible_roles, approved_at, approver:profiles!documents_approved_by_fkey(full_name, email), current_version:document_versions!documents_current_version_id_fkey(id, content, version_number, created_at)'
 
-/** Sin la migración 0016 no existe la columna `theme`: se reintenta sin ella. */
+/** Sin las migraciones 0016 (theme) o 0023 (featured) no existen esas columnas: se reintenta sin ellas. */
 const isMissingColumn = (message: string) =>
   /does not exist|schema cache|could not find/i.test(message)
 
@@ -515,9 +532,13 @@ export const getDocument = createServerFn({ method: 'GET' })
     // Las tres lecturas no dependen entre sí: van a la vez (si el documento no se ve, tampoco se ven sus versiones).
     const [documentResult, { data: versions, error: versionsError }, favorite] =
       await Promise.all([
-        fetchDocument(`${DETAIL_COLUMNS}, theme`).then((result) =>
+        fetchDocument(`${DETAIL_COLUMNS}, theme, featured`).then((result) =>
           result.error && isMissingColumn(result.error.message)
-            ? fetchDocument(DETAIL_COLUMNS)
+            ? fetchDocument(`${DETAIL_COLUMNS}, theme`).then((retry) =>
+                retry.error && isMissingColumn(retry.error.message)
+                  ? fetchDocument(DETAIL_COLUMNS)
+                  : retry,
+              )
             : result,
         ),
         context.supabase
@@ -542,12 +563,13 @@ export const getDocument = createServerFn({ method: 'GET' })
 
     const row = document as unknown as Omit<
       DocumentDetail,
-      'is_favorite' | 'theme'
-    > & { theme?: unknown }
+      'is_favorite' | 'theme' | 'featured'
+    > & { theme?: unknown; featured?: boolean }
     return {
       document: {
         ...row,
         theme: themeOf(row.theme),
+        featured: row.featured === true,
         is_favorite: Boolean(favorite.data),
       },
       versions: versions as unknown as Array<DocumentVersionSummary>,

@@ -102,7 +102,7 @@ export function TableGrips({ editor }: { editor: Editor }) {
     const { table } = layout
     dragging.current = true
     setActive(`c${index}`)
-    // Se fijan los anchos de todas antes de empezar: solo se mueve esta columna.
+    // Se fijan los anchos de todas antes de empezar: solo se mueve esta columna (y, si aplica, su vecina).
     freezeColumnWidths(editor.view, table)
     const positions = tableRowPositions(editor, table)
     const cols = table.querySelectorAll<HTMLElement>('colgroup > col')
@@ -111,7 +111,55 @@ export function TableGrips({ editor }: { editor: Editor }) {
       (c) => c.getBoundingClientRect().width,
     )
     const startWidth = widths[index]
-    // La tabla no puede pasar de los márgenes de la hoja: esta columna solo crece hasta llenar lo que dejan las demás.
+    const isOuterEdge = index === widths.length - 1
+
+    if (!isOuterEdge) {
+      // Borde interior: como en cualquier tabla, comprime una columna y amplía la vecina en la misma
+      // medida, dejando el ancho total (y por tanto los bordes izquierdo/derecho de la tabla) igual.
+      const neighborWidth = widths[index + 1]
+      const pairWidth = startWidth + neighborWidth
+      const maxWidth = Math.max(MIN_COL, pairWidth - MIN_COL)
+      let width = startWidth
+      const move = (e: PointerEvent) => {
+        width = Math.max(
+          MIN_COL,
+          Math.min(maxWidth, startWidth + e.clientX - startX),
+        )
+        cols.item(index).style.width = `${Math.round(width)}px`
+        cols.item(index + 1).style.width = `${Math.round(pairWidth - width)}px`
+        // El total no cambia, pero se reafirma explícitamente: si quedara desajustado respecto a la
+        // suma de columnas, con table-layout:fixed el navegador reparte el espacio a su aire y la
+        // tabla se ve mal (o se sale de la hoja).
+        let total = 0
+        cols.forEach((c) => (total += Number.parseFloat(c.style.width) || 0))
+        if (total) table.style.width = `${total}px`
+        measure()
+      }
+      const up = () => {
+        handle.removeEventListener('pointermove', move)
+        handle.removeEventListener('pointerup', up)
+        handle.removeEventListener('pointercancel', up)
+        dragging.current = false
+        setActive(null)
+        if (positions) {
+          applyColumnWidth(editor, positions.tablePos, index, Math.round(width))
+          applyColumnWidth(
+            editor,
+            positions.tablePos,
+            index + 1,
+            Math.round(pairWidth - width),
+          )
+        }
+        requestAnimationFrame(measure)
+      }
+      handle.addEventListener('pointermove', move)
+      handle.addEventListener('pointerup', up)
+      handle.addEventListener('pointercancel', up)
+      return
+    }
+
+    // Borde derecho de la tabla: no hay vecina a la que quitarle o darle espacio, así que aquí sí
+    // cambia el ancho total de la tabla (limitado a los márgenes de la hoja).
     const others = widths.reduce(
       (sum, w, i) => (i === index ? sum : sum + w),
       0,

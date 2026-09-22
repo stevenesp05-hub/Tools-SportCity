@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   createFileRoute,
   redirect,
   Link,
   Outlet,
+  useMatches,
   useRouter,
   useRouterState,
 } from '@tanstack/react-router'
 import {
+  ChevronRight,
   ClipboardList,
   Folder,
   Home,
@@ -19,6 +21,8 @@ import {
 import { logout } from '#/server/auth'
 import { clearCachedUser } from '#/lib/session-cache'
 import { listFolders } from '#/server/documents'
+import type { DocumentDetail } from '#/server/documents'
+import { folderChainOf } from '#/lib/breadcrumbs'
 import { ROLE_LABELS, hasPermission } from '#/lib/permissions'
 import { Button } from '#/components/ui/button'
 import { Avatar, AvatarFallback } from '#/components/ui/avatar'
@@ -52,13 +56,42 @@ function AuthedLayout() {
     !pathname.startsWith('/documentos/doc/')
       ? pathname.split('/')[2]
       : null
-  const activeSpaceId = (() => {
-    const byId = new Map(folders.map((f) => [f.id, f]))
-    let cursor = currentFolderId ? byId.get(currentFolderId) : undefined
-    while (cursor?.parent_id) cursor = byId.get(cursor.parent_id)
-    return cursor?.id ?? null
-  })()
+  const folderChain = useMemo(
+    () => folderChainOf(folders, currentFolderId),
+    [folders, currentFolderId],
+  )
+  const activeSpaceId = folderChain[0]?.id ?? null
   const router = useRouter()
+
+  // El documento abierto (si lo hay): su título y carpeta, para la ruta de la barra superior.
+  const openDocument = useMatches({
+    select: (matches) =>
+      (
+        matches.find((m) => m.routeId === '/_authed/documentos/doc/$docId') as
+          { loaderData?: { document: DocumentDetail } } | undefined
+      )?.loaderData?.document,
+  })
+  const crumbs = useMemo(() => {
+    const section: Record<string, string> = {
+      '/documentos/papelera': 'Papelera',
+      '/auditoria': 'Auditoría',
+      '/administracion': 'Administración',
+      '/buscar': 'Buscar',
+    }
+    if (section[pathname]) return [{ label: section[pathname] }]
+    if (pathname.startsWith('/documentos/doc/')) {
+      if (!openDocument) return []
+      return [
+        ...folderChainOf(folders, openDocument.folder_id).map((f) => ({
+          label: f.name,
+          folderId: f.id,
+        })),
+        { label: openDocument.title.trim() || 'Documento sin título' },
+      ]
+    }
+    if (pathname === '/documentos') return []
+    return folderChain.map((f) => ({ label: f.name, folderId: f.id }))
+  }, [pathname, openDocument, folders, folderChain])
 
   const [sidebarOpen, setSidebarOpen] = useState(true)
   // En pantallas estrechas la barra lateral es un cajón sobre el contenido (no lo empuja) y se cierra al navegar.
@@ -278,7 +311,46 @@ function AuthedLayout() {
           >
             <PanelLeft className="size-5" />
           </Button>
-          <GlobalSearch />
+          {crumbs.length > 0 && (
+            <nav
+              aria-label="Ruta"
+              className="hidden min-w-0 flex-1 items-center gap-1 overflow-hidden text-sm text-muted-foreground md:flex"
+            >
+              <Link
+                to="/documentos"
+                className="flex-none rounded-md px-1.5 py-0.5 font-medium hover:bg-secondary hover:text-foreground"
+              >
+                Inicio
+              </Link>
+              {crumbs.map((crumb, index) => (
+                <span
+                  key={'folderId' in crumb ? crumb.folderId : index}
+                  className="flex min-w-0 items-center gap-1"
+                >
+                  <ChevronRight className="size-3.5 flex-none" />
+                  {'folderId' in crumb ? (
+                    <Link
+                      to="/documentos/$folderId"
+                      params={{ folderId: crumb.folderId }}
+                      className="truncate rounded-md px-1.5 py-0.5 font-medium hover:bg-secondary hover:text-foreground"
+                    >
+                      {crumb.label}
+                    </Link>
+                  ) : (
+                    <span
+                      className="truncate px-1.5 py-0.5 font-medium text-foreground"
+                      title={crumb.label}
+                    >
+                      {crumb.label}
+                    </span>
+                  )}
+                </span>
+              ))}
+            </nav>
+          )}
+          <div className="shrink-0">
+            <GlobalSearch />
+          </div>
           <div className="ml-auto">
             <NotificationsBell />
           </div>

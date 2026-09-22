@@ -61,6 +61,7 @@ import {
   formulaAvgAbove,
   formulaSumAbove,
   formulaSumLeft,
+  insertTableColumn,
   openBlockDialog,
   tableChartData,
   replaceAll,
@@ -451,10 +452,10 @@ function TableBar({ editor }: { editor: Editor }) {
       </MenuButton>
 
       <MenuButton icon={Columns3} label="Columnas">
-        <DropdownMenuItem onSelect={() => chain().addColumnBefore().run()}>
+        <DropdownMenuItem onSelect={() => insertTableColumn(editor, 'before')}>
           Insertar columna a la izquierda
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => chain().addColumnAfter().run()}>
+        <DropdownMenuItem onSelect={() => insertTableColumn(editor, 'after')}>
           Insertar columna a la derecha
         </DropdownMenuItem>
         <DropdownMenuSeparator />

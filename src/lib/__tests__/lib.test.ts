@@ -3,8 +3,50 @@ import { extractHeadings, extractText, htmlToText } from '../document-text'
 import { buildSnippet, normalizeText } from '../search-utils'
 import { hasPermission } from '../permissions'
 import { sanitizeContentHtml } from '../sanitize.server'
+import { folderChainOf } from '../breadcrumbs'
 
 import { DEFAULT_TEMPLATES, buildTemplateContent } from '../default-templates'
+
+const folder = (
+  id: string,
+  parent_id: string | null,
+  name = id,
+): {
+  id: string
+  name: string
+  parent_id: string | null
+  visible_roles: null
+} => ({
+  id,
+  name,
+  parent_id,
+  visible_roles: null,
+})
+
+describe('folderChainOf', () => {
+  const folders = [
+    folder('a', null, 'Alcances'),
+    folder('b', 'a', 'Eventos'),
+    folder('c', 'b', '2026'),
+  ]
+
+  it('devuelve la ruta de la raíz a la carpeta, en ese orden', () => {
+    expect(folderChainOf(folders, 'c').map((f) => f.name)).toEqual([
+      'Alcances',
+      'Eventos',
+      '2026',
+    ])
+    expect(folderChainOf(folders, 'a').map((f) => f.name)).toEqual(['Alcances'])
+  })
+
+  it('vacío sin id, con un id que no existe, o con un ciclo accidental', () => {
+    expect(folderChainOf(folders, null)).toEqual([])
+    expect(folderChainOf(folders, 'zzz')).toEqual([])
+    const cyclic = [folder('x', 'y'), folder('y', 'x')]
+    expect(() => folderChainOf(cyclic, 'x')).not.toThrow()
+    expect(folderChainOf(cyclic, 'x').length).toBeLessThanOrEqual(2)
+  })
+})
 
 describe('extractText', () => {
   it('une el texto de bloques y celdas', () => {

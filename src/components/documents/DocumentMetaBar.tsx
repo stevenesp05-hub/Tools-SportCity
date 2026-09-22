@@ -1,11 +1,12 @@
 import { Suspense, lazy, memo, useState } from 'react'
-import { CalendarClock, Lock, Star, Tag, X } from 'lucide-react'
+import { CalendarClock, Lock, Megaphone, Star, Tag, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { ROLES, ROLE_LABELS } from '#/lib/permissions'
 import type { Role } from '#/lib/permissions'
 import { DOC_STATUSES } from '#/server/documents'
 import type { DocStatus, DocumentDetail } from '#/server/documents'
 import {
+  setFeatured,
   toggleFavorite,
   updateDocumentAccess,
   updateDocumentMeta,
@@ -279,6 +280,26 @@ export const DocumentMetaBar = memo(function DocumentMetaBar({
               className={cn('size-4', document.visible_roles && 'text-primary')}
             />
             Acceso
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-full justify-start"
+            title="Aparece en el inicio de todo el mundo, sin que cada persona lo marque como favorito."
+            onClick={() =>
+              run(
+                () =>
+                  setFeatured({
+                    data: { id: document.id, featured: !document.featured },
+                  }),
+                { featured: !document.featured },
+              )
+            }
+          >
+            <Megaphone
+              className={cn('size-4', document.featured && 'text-primary')}
+            />
+            {document.featured ? 'Destacado para todos' : 'Destacar para todos'}
           </Button>
           <Dialog open={accessOpen} onOpenChange={setAccessOpen}>
             <DialogContent>

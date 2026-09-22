@@ -6,6 +6,7 @@ import {
   Eye,
   FileText,
   Lock,
+  Megaphone,
   Pencil,
   Star,
 } from 'lucide-react'
@@ -161,6 +162,12 @@ export function DocumentGrid({
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-muted-foreground">
                 <StatusBadge status={doc.status} />
                 {doc.visible_roles && <Lock className="size-3" />}
+                {doc.featured && (
+                  <Megaphone
+                    className="size-3 text-primary"
+                    aria-label="Destacado para todos"
+                  />
+                )}
                 {doc.due_date && (
                   <span
                     className={cn(
@@ -291,6 +298,12 @@ export function DocumentList({
                 </span>
                 {doc.visible_roles && (
                   <Lock className="size-3 flex-none text-muted-foreground" />
+                )}
+                {doc.featured && (
+                  <Megaphone
+                    className="size-3 flex-none text-primary"
+                    aria-label="Destacado para todos"
+                  />
                 )}
                 <span className="hidden w-24 flex-none md:block">
                   <StatusBadge status={doc.status} />
