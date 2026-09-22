@@ -61,6 +61,8 @@ function AuthedLayout() {
   const router = useRouter()
 
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  // En pantallas estrechas la barra lateral es un cajón sobre el contenido (no lo empuja) y se cierra al navegar.
+  const [narrow, setNarrow] = useState(false)
   useEffect(() => {
     try {
       const stored = localStorage.getItem('sc-sidebar')
@@ -72,12 +74,28 @@ function AuthedLayout() {
       /* sin almacenamiento: barra abierta */
     }
   }, [])
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 1023px)')
+    const sync = () => {
+      setNarrow(query.matches)
+      if (query.matches) setSidebarOpen(false)
+    }
+    sync()
+    query.addEventListener('change', sync)
+    return () => query.removeEventListener('change', sync)
+  }, [])
+  useEffect(() => {
+    if (narrow) setSidebarOpen(false)
+  }, [pathname, narrow])
   function toggleSidebar() {
     setSidebarOpen((open) => {
-      try {
-        localStorage.setItem('sc-sidebar', open ? 'closed' : 'open')
-      } catch {
-        /* preferencia no persistida */
+      // La preferencia guardada es la del escritorio; el cajón del móvil no la cambia.
+      if (!narrow) {
+        try {
+          localStorage.setItem('sc-sidebar', open ? 'closed' : 'open')
+        } catch {
+          /* preferencia no persistida */
+        }
       }
       return !open
     })
@@ -104,11 +122,26 @@ function AuthedLayout() {
 
   return (
     <div className="flex h-dvh overflow-hidden bg-background">
+      {narrow && sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden
+        />
+      )}
       <aside
         data-app-sidebar
         className={cn(
-          'flex flex-none flex-col overflow-hidden border-r border-border bg-card transition-[width] duration-200',
-          sidebarOpen ? 'w-72' : 'w-0 border-r-0',
+          'flex flex-none flex-col overflow-hidden border-r border-border bg-card',
+          narrow
+            ? cn(
+                'fixed inset-y-0 left-0 z-50 w-[min(18rem,86vw)] shadow-lg transition-transform duration-200',
+                sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+              )
+            : cn(
+                'transition-[width] duration-200',
+                sidebarOpen ? 'w-72' : 'w-0 border-r-0',
+              ),
         )}
         inert={!sidebarOpen}
       >

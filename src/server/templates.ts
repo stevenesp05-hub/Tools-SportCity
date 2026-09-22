@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { authMiddleware } from '#/server/auth'
 import {
   DEFAULT_TEMPLATES,
+  RETIRED_TEMPLATE_NAMES,
   buildTemplateContent,
 } from '#/lib/default-templates'
 import { sanitizeContentHtml } from '#/lib/sanitize.server'
@@ -72,6 +73,9 @@ export const installBaseTemplates = createServerFn({ method: 'POST' })
         if (!existingByName.has(t.name)) existingByName.set(t.name, t.id)
         else if (baseNames.has(t.name)) duplicateIds.push(t.id)
       }
+      // Plantillas base con nombre antiguo: se retiran (la versión actual ya las sustituye).
+      for (const t of (current ?? []) as Array<{ id: string; name: string }>)
+        if (RETIRED_TEMPLATE_NAMES.includes(t.name)) duplicateIds.push(t.id)
       if (duplicateIds.length > 0) {
         const { error } = await context.supabase
           .from('document_templates')

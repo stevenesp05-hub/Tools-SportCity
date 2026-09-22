@@ -50,11 +50,79 @@ const escapeHtml = (value: string) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
 
-/** "#abc", "#aabbcc" o "rgb(a)(…)" → "#aabbcc"; null si es transparente o no se entiende. */
+type Rgba = { r: number; g: number; b: number; a: number }
+
+/** oklch(L C h [/ a]) → sRGB; null si no se entiende. */
+function oklchToRgba(value: string): Rgba | null {
+  const m =
+    /^oklch\(\s*([\d.]+%?)\s+([\d.]+%?)\s+([\d.]+)(?:deg)?\s*(?:\/\s*([\d.]+%?))?\s*\)$/.exec(
+      value.trim().toLowerCase(),
+    )
+  if (!m) return null
+  const num = (v: string, scale: number) =>
+    v.endsWith('%')
+      ? (Number.parseFloat(v) / 100) * scale
+      : Number.parseFloat(v)
+  const L = num(m[1], 1)
+  const C = num(m[2], 0.4)
+  const h = (Number.parseFloat(m[3]) * Math.PI) / 180
+  const a = C * Math.cos(h)
+  const b = C * Math.sin(h)
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3
+  const mm = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3
+  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3
+  const [r, g, bl] = [
+    4.0767416621 * l - 3.3077115913 * mm + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * mm - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * mm + 1.707614701 * s,
+  ].map((v) => {
+    const c = Math.min(1, Math.max(0, v))
+    return Math.round(
+      (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055) * 255,
+    )
+  })
+  return { r, g, b: bl, a: m[4] ? num(m[4], 1) : 1 }
+}
+
+const hex2 = (n: number) => n.toString(16).padStart(2, '0')
+
+/** oklch(…) → "#rrggbb" (o "rgba(…)" si es translúcido) para que el motor de estilos lo entienda. */
+function oklchToCss(value: string): string | null {
+  const c = oklchToRgba(value)
+  if (!c) return null
+  return c.a >= 1
+    ? `#${hex2(c.r)}${hex2(c.g)}${hex2(c.b)}`
+    : `rgba(${c.r}, ${c.g}, ${c.b}, ${Number(c.a.toFixed(3))})`
+}
+
+/**
+ * Prepara el HTML antes de leer sus estilos: el motor de estilos no resuelve `var(--x)` en
+ * abreviaturas como `background` ni entiende `oklch()`, que es como se escriben los colores de marca.
+ * Se sustituyen las variables por su valor y los `oklch()` por colores normales.
+ */
+export function resolveModernCss(source: string): string {
+  const vars = new Map<string, string>()
+  for (const m of source.matchAll(/(--[\w-]+)\s*:\s*([^;{}]+?)\s*(?=;|})/g))
+    vars.set(m[1], m[2].trim())
+  let out = source
+  for (let i = 0; i < 6 && out.includes('var('); i += 1)
+    out = out.replace(
+      /var\(\s*(--[\w-]+)\s*(?:,\s*((?:[^()]|\([^()]*\))*))?\)/g,
+      (_, name: string, fallback?: string) =>
+        vars.get(name) ?? fallback?.trim() ?? '',
+    )
+  return out.replace(/oklch\([^)]*\)/gi, (m) => oklchToCss(m) ?? m)
+}
+
+/** "#abc", "#aabbcc", "rgb(a)(…)" u "oklch(…)" → "#aabbcc"; null si es transparente o no se entiende. */
 export function toHex(color: string | undefined): string | null {
   if (!color) return null
   const value = color.trim().toLowerCase()
   if (!value || value === 'transparent' || value === 'inherit') return null
+  if (value.startsWith('oklch(')) {
+    const c = oklchToRgba(value)
+    return c && c.a >= 0.2 ? `#${hex2(c.r)}${hex2(c.g)}${hex2(c.b)}` : null
+  }
   const short = /^#([0-9a-f]{3})$/.exec(value)
   if (short) return `#${[...short[1]].map((c) => c + c).join('')}`
   if (/^#[0-9a-f]{6}$/.test(value)) return value
@@ -107,7 +175,7 @@ function bgOf(ctx: Ctx, el: HElement): string | null {
   // Degradados: se toma el primer color (ya con las variables CSS resueltas).
   if (!hex) {
     const image = cs.backgroundImage || cs.background
-    const first = /#[0-9a-f]{3,8}\b|rgba?\([^)]*\)/i.exec(image)
+    const first = /#[0-9a-f]{3,8}\b|rgba?\([^)]*\)|oklch\([^)]*\)/i.exec(image)
     if (first)
       hex = toHex(first[0].length === 9 ? first[0].slice(0, 7) : first[0])
   }
@@ -246,7 +314,33 @@ function convertList(ctx: Ctx, list: HElement): string {
   const items = [...list.children]
     .filter((c): c is HElement => isElement(c) && tag(c) === 'li')
     .map((li) => `<li><p>${inlineChildren(ctx, li)}</p></li>`)
-  return items.length ? `<${name}>${items.join('')}</${name}>` : ''
+  // Una lista numerada que sigue a otra (cláusulas 11, 12…) conserva su número inicial.
+  const start = Number.parseInt(list.getAttribute('start') ?? '', 10)
+  const open =
+    name === 'ol' && start > 1 ? `<ol start="${start}">` : `<${name}>`
+  return items.length ? `${open}${items.join('')}</${name}>` : ''
+}
+
+const CALLOUT_TONES = new Set(['info', 'warn', 'ok', 'key', 'summary', 'kpi'])
+
+/** Bloque de firmas del propio editor (`data-signatures`): cada `data-signature` lleva sus leyendas, una por línea. */
+function convertSignatures(ctx: Ctx, block: HElement): string {
+  const signers = [...block.children]
+    .filter(
+      (c): c is HElement => isElement(c) && c.hasAttribute('data-signature'),
+    )
+    .slice(0, 3)
+    .map((signer) => {
+      const lines = [...signer.children]
+        .filter(isElement)
+        .map((c) => inlineChildren(ctx, c))
+        .filter(Boolean)
+      const text = lines.length > 0 ? lines : [inlineChildren(ctx, signer)]
+      return `<div data-signature>${text.map((l) => `<p>${l}</p>`).join('')}</div>`
+    })
+  return signers.length > 0
+    ? `<div data-signatures>${signers.join('')}</div>`
+    : ''
 }
 
 /** Bloques de un contenedor, en orden. */
@@ -329,6 +423,20 @@ function convertBlock(ctx: Ctx, el: HElement, next: HNode | null): string[] {
   }
   if (name === 'ul' || name === 'ol')
     return [convertList(ctx, el)].filter(Boolean)
+  if (el.hasAttribute('data-callout')) {
+    // Aviso del propio editor (`data-callout`): conserva su tono y su contenido.
+    const tone = el.getAttribute('data-tone') ?? 'info'
+    const inner = blocks(ctx, el).join('')
+    return inner
+      ? [
+          `<div data-callout data-tone="${CALLOUT_TONES.has(tone) ? tone : 'info'}">${inner}</div>`,
+        ]
+      : []
+  }
+  if (el.hasAttribute('data-signatures')) {
+    const signatures = convertSignatures(ctx, el)
+    return signatures ? [signatures] : []
+  }
   if (name === 'table') return [convertTable(ctx, el)]
   if (name === 'dl') return [convertDefinitions(ctx, el)]
   if (name === 'blockquote') {
@@ -524,7 +632,7 @@ export function convertStyledHtml(source: string): StyledImport {
     },
   })
   try {
-    win.document.write(source)
+    win.document.write(resolveModernCss(source))
     const ctx: Ctx = { win, campaign: false }
     const body = win.document.body as unknown as HElement
     const marker = '<div data-callout data-tone="hero">'

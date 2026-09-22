@@ -71,10 +71,7 @@ export function categoryOf(name: string): TemplateCategory {
 }
 
 const THEME_RULES: Array<[RegExp, DocTheme]> = [
-  [
-    /propuesta|cotizacion|presupuesto|cuadro comparativo|patrocinio/,
-    'proposal',
-  ],
+  [/propuesta|cotizacion|presupuesto|comparativo|patrocinio/, 'proposal'],
   [
     /informe|manual de|plan de proyecto|terminos de referencia|alcance/,
     'report',

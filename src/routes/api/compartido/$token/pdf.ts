@@ -4,6 +4,7 @@ import { getSupabaseAdminClient } from '#/lib/supabase/admin.server'
 import { resolveShareToken } from '#/server/sharing.server'
 import { loadDocumentForExport } from '#/server/export.server'
 import { renderDocumentPdfCached } from '#/lib/pdf-cache.server'
+import { withoutAuthorship } from '#/lib/share-options'
 
 // Límite sencillo por enlace y por IP: la generación de PDF es costosa y este endpoint es público.
 // Vive en la memoria de la instancia (en serverless no se comparte entre instancias): frena ráfagas, no es un límite exacto.
@@ -64,12 +65,20 @@ export const Route = createFileRoute('/api/compartido/$token/pdf')({
             status: 429,
           })
 
-        const input = await loadDocumentForExport(
-          getSupabaseAdminClient(),
-          documentId,
-        )
-        if (!input)
+        const admin = getSupabaseAdminClient()
+        const loaded = await loadDocumentForExport(admin, documentId)
+        if (!loaded)
           return new Response('Documento no encontrado', { status: 404 })
+        // Enlace «sin autoría»: el PDF no muestra autor ni aprobador (columna de la migración 0022; si no existe, se muestran).
+        const { data: share } = await admin
+          .from('document_shares')
+          .select('hide_authorship')
+          .eq('token', params.token)
+          .maybeSingle()
+        const input = (share as { hide_authorship?: boolean } | null)
+          ?.hide_authorship
+          ? withoutAuthorship(loaded)
+          : loaded
 
         // El enlace ya se validó arriba; la caché solo evita regenerar el mismo PDF.
         const pdf = await renderDocumentPdfCached(documentId, input)

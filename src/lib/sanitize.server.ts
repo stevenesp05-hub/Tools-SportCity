@@ -92,6 +92,8 @@ export function sanitizeContentHtml(html: string): string {
           'data-callout',
           'data-tone',
           'data-page-break',
+          'data-signatures',
+          'data-signature',
           'data-toc',
           'data-org',
           'data-chart',
@@ -130,6 +132,7 @@ export function sanitizeContentHtml(html: string): string {
         mark: ['style', 'data-color'],
         figure: ['class', 'data-align', 'style'],
         ul: ['data-type'],
+        ol: ['start'],
         li: ['data-type', 'data-checked'],
       },
       allowedClasses: {

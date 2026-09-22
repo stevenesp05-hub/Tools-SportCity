@@ -28,6 +28,7 @@ import {
   PenLine,
   Quote,
   SeparatorHorizontal,
+  Signature,
   Star,
   Table as TableIcon,
   TriangleAlert,
@@ -42,6 +43,7 @@ import {
 } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { EditorState } from '@tiptap/pm/state'
+import { insertPageBreak, signaturesContent } from '#/lib/editor-extensions'
 import type { EditorView } from '@tiptap/pm/view'
 import { TableMap, columnResizingPluginKey } from '@tiptap/pm/tables'
 import type { Node as PMNode } from '@tiptap/pm/model'
@@ -476,6 +478,20 @@ export function openBlockDialog(request: BlockDialogRequest) {
   )
 }
 
+/**
+ * Ctrl+Enter inserta un salto de página, como en Google Docs. El salto de línea sigue siendo Mayús+Enter.
+ * Va con prioridad alta para pasar por delante del salto de línea que Tiptap asocia a Ctrl+Enter.
+ */
+export const PageBreakShortcut = Extension.create({
+  name: 'scPageBreakShortcut',
+  priority: 1000,
+  addKeyboardShortcuts() {
+    const run = () => insertPageBreak(this.editor)
+    // En Mac «Mod» es Cmd: se enlaza también Control, que es la tecla que se usa en Windows y la que se anuncia.
+    return { 'Mod-Enter': run, 'Ctrl-Enter': run }
+  },
+})
+
 /** Clic sobre un organigrama o gráfico en modo edición: abre su editor. */
 export const BlockEditing = Extension.create({
   name: 'scBlockEditing',
@@ -897,11 +913,52 @@ export const SLASH_ITEMS: SlashItem[] = [
   },
   {
     group: 'Bloques',
+    icon: Signature,
+    title: 'Puntos de firma',
+    description: 'Dos líneas para firmar a mano (jugador y capitán)',
+    keywords: 'firma firmas firmar firmante compromiso aceptacion linea',
+    run: (e) => {
+      e.chain()
+        .focus()
+        .insertContent([
+          signaturesContent([
+            ['Firma del jugador', 'Nombre completo y cédula'],
+            [
+              'Firma del capitán o director técnico',
+              'Nombre completo y cédula',
+            ],
+          ]),
+          { type: 'paragraph' },
+        ])
+        .run()
+    },
+  },
+  {
+    group: 'Bloques',
+    icon: Signature,
+    title: 'Punto de firma',
+    description: 'Una sola línea para firmar a mano',
+    keywords: 'firma unica una sola firmar linea',
+    run: (e) => {
+      e.chain()
+        .focus()
+        .insertContent([
+          signaturesContent([['Firma', 'Nombre completo y cargo']]),
+          { type: 'paragraph' },
+        ])
+        .run()
+    },
+  },
+  {
+    group: 'Bloques',
     icon: SeparatorHorizontal,
     title: 'Salto de página',
     description: 'Lo siguiente empieza en una hoja nueva',
-    keywords: 'salto pagina hoja',
-    run: (e) => e.chain().focus().insertContent({ type: 'pageBreak' }).run(),
+    keywords: 'salto pagina hoja nueva',
+    shortcut: 'Ctrl+Enter',
+    run: (e) => {
+      insertPageBreak(e)
+    },
   },
   {
     group: 'Datos',

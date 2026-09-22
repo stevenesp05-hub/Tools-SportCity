@@ -189,6 +189,14 @@ const cambios = (): Block =>
     [['1.0', '{{fecha}}', 'Emisión inicial', '{{usuario}}']],
   )
 
+/**
+ * Plantillas base que cambiaron de nombre: el instalador borra las copias con el nombre antiguo
+ * (la nueva las sustituye) para que no aparezcan dos versiones de lo mismo.
+ */
+export const RETIRED_TEMPLATE_NAMES: readonly string[] = [
+  'Cuadro comparativo de cotizaciones',
+]
+
 export type TemplateDefinition = {
   name: string
   description: string
@@ -1192,38 +1200,33 @@ const PRESUPUESTOS: TemplateDefinition[] = [
 
 const PROVEEDORES: TemplateDefinition[] = [
   {
-    name: 'Cuadro comparativo de cotizaciones',
+    name: 'Comparativo de proveedores',
     description:
       'Compara proveedores de un producto o servicio y documenta la recomendación.',
     space: 'Proveedores',
-    blocks: formal(
-      'Cuadro comparativo de cotizaciones',
-      'SC-CMP-001',
-      'Compras',
-      [
-        field('Producto o servicio'),
-        field('Fecha'),
-        field('Responsable'),
-        h2('1. Comparativo'),
-        table(
-          [
-            'Proveedor',
-            'Contacto',
-            'Precio (C$)',
-            'Entrega',
-            'Garantía',
-            'Puntaje',
-          ],
-          blank(4, 6),
-        ),
-        h2('2. Análisis'),
-        p('[Ventajas y desventajas de cada opción]'),
-        h2('3. Recomendación'),
-        callout('ok', '[Proveedor recomendado y motivo de la elección]'),
-        h2('4. Aprobación'),
-        firmas(['Elaboró', 'Compras', 'Gerencia']),
-      ],
-    ),
+    blocks: formal('Comparativo de proveedores', 'SC-CMP-001', 'Compras', [
+      field('Producto o servicio'),
+      field('Fecha'),
+      field('Responsable'),
+      h2('1. Comparativo'),
+      table(
+        [
+          'Proveedor',
+          'Contacto',
+          'Precio (C$)',
+          'Entrega',
+          'Garantía',
+          'Puntaje',
+        ],
+        blank(4, 6),
+      ),
+      h2('2. Análisis'),
+      p('[Ventajas y desventajas de cada opción]'),
+      h2('3. Recomendación'),
+      callout('ok', '[Proveedor recomendado y motivo de la elección]'),
+      h2('4. Aprobación'),
+      firmas(['Elaboró', 'Compras', 'Gerencia']),
+    ]),
   },
   {
     name: 'Ficha de proveedor',

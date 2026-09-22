@@ -27,7 +27,7 @@ const BORDER_COLORS: Record<string, string> = {
 function replaceDivBlocks(
   html: string,
   open: RegExp,
-  replace: (openTag: string) => string,
+  replace: (openTag: string, inner: string) => string,
 ): string {
   let out = ''
   let cursor = 0
@@ -38,15 +38,19 @@ function replaceDivBlocks(
     const tags = /<div\b|<\/div>/g
     tags.lastIndex = m.index + m[0].length
     let end = -1
+    let innerEnd = -1
     for (let t = tags.exec(html); t; t = tags.exec(html)) {
       depth += t[0] === '</div>' ? -1 : 1
       if (depth === 0) {
+        innerEnd = t.index
         end = t.index + t[0].length
         break
       }
     }
     if (end === -1) break
-    out += html.slice(cursor, m.index) + replace(m[0])
+    out +=
+      html.slice(cursor, m.index) +
+      replace(m[0], html.slice(m.index + m[0].length, innerEnd))
     cursor = end
     re.lastIndex = end
   }
@@ -60,6 +64,26 @@ const orgToList = (nodes: OrgNode[]): string =>
         `<li><p><strong>${escapeHtml(n.name)}</strong>${n.role ? ` — ${escapeHtml(n.role)}` : ''}</p>${n.children.length ? orgToList(n.children) : ''}</li>`,
     )
     .join('')}</ul>`
+
+/** Firmas → tabla sin bordes: espacio para firmar, una línea y la leyenda debajo de cada firmante. */
+function signaturesToWordHtml(inner: string): string {
+  const signers = [
+    ...inner.matchAll(
+      /<div[^>]*data-signature(?:="")?[^>]*>([\s\S]*?)<\/div>/g,
+    ),
+  ]
+  if (signers.length === 0) return ''
+  const cells = signers
+    .map(
+      (m) =>
+        `<td><p>&nbsp;</p><p>&nbsp;</p><p style="text-align:center">______________________________</p>${m[1].replace(
+          /<p>/g,
+          '<p style="text-align:center">',
+        )}</td>`,
+    )
+    .join('')
+  return `<table data-border="none"><tbody><tr>${cells}</tr></tbody></table>`
+}
 
 /** Word no dibuja el gráfico: se entrega su título, su tabla de datos y la nota. */
 function chartToWordHtml(spec: ChartSpec): string {
@@ -113,6 +137,11 @@ export function prepareHtmlForDocx(html: string): string {
         }),
       )
     },
+  )
+  out = replaceDivBlocks(
+    out,
+    /<div[^>]*data-signatures(?:="")?[^>]*>/,
+    (_tag, inner) => signaturesToWordHtml(inner),
   )
   out = replaceDivBlocks(out, /<div[^>]*data-org="([^"]*)"[^>]*>/, (tag) => {
     const encoded = /data-org="([^"]*)"/.exec(tag)?.[1] ?? null

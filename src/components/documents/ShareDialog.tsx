@@ -5,6 +5,7 @@ import { createShare, listShares, revokeShare } from '#/server/sharing'
 import type { ShareLink } from '#/server/sharing'
 import { Button } from '#/components/ui/button'
 import { ChoiceSelect } from '#/components/ui/choice-select'
+import { Checkbox } from '#/components/ui/checkbox'
 import { Label } from '#/components/ui/label'
 import {
   Dialog,
@@ -28,14 +29,18 @@ export const ShareDialog = memo(function ShareDialog({
   documentId,
   open,
   onOpenChange,
+  canHideAuthorship = false,
 }: {
   documentId: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Solo el administrador puede ocultar autor y aprobador en lo compartido. */
+  canHideAuthorship?: boolean
 }) {
   const [links, setLinks] = useState<ShareLink[]>([])
   const [expiry, setExpiry] = useState<string>('30')
   const [busy, setBusy] = useState(false)
+  const [hideAuthorship, setHideAuthorship] = useState(false)
 
   const refresh = useCallback(async () => {
     try {
@@ -65,6 +70,9 @@ export const ShareDialog = memo(function ShareDialog({
         data: {
           documentId,
           days: expiry === 'never' ? null : Number(expiry),
+          ...(canHideAuthorship && hideAuthorship
+            ? { hideAuthorship: true }
+            : {}),
         },
       })
       await refresh()
@@ -119,6 +127,22 @@ export const ShareDialog = memo(function ShareDialog({
             Crear y copiar enlace
           </Button>
         </div>
+        {canHideAuthorship && (
+          <label className="flex items-start gap-2 text-sm text-foreground">
+            <Checkbox
+              className="mt-0.5"
+              checked={hideAuthorship}
+              onCheckedChange={(v) => setHideAuthorship(v === true)}
+            />
+            <span>
+              Ocultar autor y aprobador
+              <span className="block text-xs text-muted-foreground">
+                El PDF que descargue quien reciba el enlace saldrá sin nombres:
+                ni quién lo escribió ni quién lo aprobó.
+              </span>
+            </span>
+          </label>
+        )}
 
         {links.length > 0 && (
           <ul className="max-h-64 space-y-2 overflow-y-auto">
@@ -142,6 +166,7 @@ export const ShareDialog = memo(function ShareDialog({
                           ? `Caduca el ${new Date(link.expiresAt).toLocaleDateString('es-NI')}`
                           : 'Sin caducidad'
                         : 'Caducado'}
+                    {link.hideAuthorship && ' · Sin autor ni aprobador'}
                   </div>
                 </div>
                 {link.active && (

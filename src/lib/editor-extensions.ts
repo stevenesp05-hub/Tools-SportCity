@@ -1,6 +1,8 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import type { Editor, JSONContent } from '@tiptap/core'
 import type { DOMOutputSpec, Node as PMNode } from '@tiptap/pm/model'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
+import type { EditorState, Transaction } from '@tiptap/pm/state'
 import { decodeAttr, encodeAttr, parseOrg } from '#/lib/diagrams'
 import type { ChartItem, OrgNode } from '#/lib/diagrams'
 import {
@@ -87,6 +89,52 @@ const Callout = Node.create({
   },
 })
 
+/**
+ * Puntos de firma: una fila de 1 a 3 firmantes. Cada uno lleva su línea para firmar (el espacio de arriba se
+ * imprime en blanco) y una leyenda editable debajo, por ejemplo «Firma del jugador» y «Nombre y cédula».
+ */
+const SignatureItem = Node.create({
+  name: 'signature',
+  content: 'paragraph+',
+  defining: true,
+  parseHTML() {
+    return [{ tag: 'div[data-signature]' }]
+  },
+  renderHTML() {
+    return ['div', { 'data-signature': '' }, 0]
+  },
+})
+
+const Signatures = Node.create({
+  name: 'signatures',
+  group: 'block',
+  content: 'signature{1,3}',
+  defining: true,
+  isolating: true,
+  parseHTML() {
+    return [{ tag: 'div[data-signatures]' }]
+  },
+  renderHTML() {
+    return ['div', { 'data-signatures': '' }, 0]
+  },
+})
+
+/** Contenido de un bloque de firmas con las leyendas dadas (una por firmante). */
+export function signaturesContent(
+  labels: ReadonlyArray<readonly string[]>,
+): JSONContent {
+  return {
+    type: 'signatures',
+    content: labels.map((lines) => ({
+      type: 'signature',
+      content: lines.map((line) => ({
+        type: 'paragraph',
+        content: [{ type: 'text', text: line }],
+      })),
+    })),
+  }
+}
+
 /** Salto de página manual: lo que sigue empieza en la hoja siguiente. */
 export const PageBreak = Node.create({
   name: 'pageBreak',
@@ -100,6 +148,53 @@ export const PageBreak = Node.create({
     return ['div', { 'data-page-break': '' }]
   },
 })
+
+/**
+ * Transacción que inserta un salto de página como en Google Docs: lo que hay después del cursor pasa a la
+ * hoja nueva y el cursor queda al principio de ella. Dentro de listas, tablas o avisos el salto va después
+ * de ese bloque. Devuelve null dentro de un bloque de código (allí Ctrl+Enter conserva su función).
+ */
+export function pageBreakTransaction(state: EditorState): Transaction | null {
+  const { pageBreak, paragraph } = state.schema.nodes
+  if (state.selection.$from.parent.type.spec.code) return null
+  const tr = state.tr
+  if (!state.selection.empty) tr.deleteSelection()
+  const $pos = tr.selection.$from
+  let at: number
+  if ($pos.depth === 1 && $pos.parent.isTextblock) {
+    const offset = $pos.parentOffset
+    if (offset === 0) {
+      // Al principio de la línea: el salto va encima y la línea pasa a la hoja nueva.
+      at = $pos.before()
+      tr.insert(at, pageBreak.create())
+    } else if (offset === $pos.parent.content.size) {
+      // Al final: el salto va debajo y el cursor queda en una línea vacía de la hoja nueva.
+      at = $pos.after()
+      tr.insert(at, [pageBreak.create(), paragraph.create()])
+    } else {
+      // En medio: se parte el párrafo y el resto del texto pasa a la hoja nueva.
+      tr.split($pos.pos)
+      at = $pos.pos + 1
+      tr.insert(at, pageBreak.create())
+    }
+  } else {
+    at = $pos.depth >= 1 ? $pos.after(1) : tr.selection.to
+    tr.insert(at, [pageBreak.create(), paragraph.create()])
+  }
+  // El salto ocupa 1 posición y el párrafo siguiente abre otra: el cursor queda dentro de él.
+  tr.setSelection(TextSelection.near(tr.doc.resolve(at + 2)))
+  return tr.scrollIntoView()
+}
+
+/** Inserta un salto de página en el cursor (Ctrl+Enter, menú Insertar y «/»). */
+export function insertPageBreak(editor: Editor): boolean {
+  // Se parte del estado de la vista, que es al que se aplicará la transacción.
+  const tr = pageBreakTransaction(editor.view.state)
+  if (!tr) return false
+  editor.view.dispatch(tr)
+  editor.view.focus()
+  return true
+}
 
 const cellBackground = {
   backgroundColor: {
@@ -652,6 +747,8 @@ export const SCHEMA_EXTENSIONS = [
   CellWithColor,
   Callout,
   PageBreak,
+  Signatures,
+  SignatureItem,
   FigureImage,
   TextStyle,
   Color,

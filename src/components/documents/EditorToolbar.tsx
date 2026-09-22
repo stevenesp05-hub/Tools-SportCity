@@ -759,6 +759,8 @@ const SHORTCUTS: Array<{ group: string; items: Array<[string, string]> }> = [
       ['Lista numerada', '1. + espacio'],
       ['Lista de tareas', '[ ] + espacio'],
       ['Subir / bajar bloque', 'Alt + Mayús + ↑ / ↓'],
+      ['Salto de página (hoja nueva)', 'Ctrl + Enter'],
+      ['Salto de línea', 'Mayús + Enter'],
     ],
   },
   {

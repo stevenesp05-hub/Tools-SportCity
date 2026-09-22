@@ -10,6 +10,7 @@ import {
   updateUserRole,
 } from '#/server/admin'
 import { installBaseTemplates } from '#/server/templates'
+import { clearTemplatePreviewCache } from '#/components/documents/template-previews'
 import { hasPermission, ROLES, ROLE_LABELS } from '#/lib/permissions'
 import type { Role } from '#/lib/permissions'
 import { Button } from '#/components/ui/button'
@@ -114,6 +115,7 @@ function AdministracionPage() {
     try {
       const { installed, updated, removed, skipped } =
         await installBaseTemplates()
+      clearTemplatePreviewCache()
       toast.success(
         `${installed} plantillas nuevas, ${updated} actualizadas` +
           (removed > 0 ? ` y ${removed} duplicadas eliminadas` : ''),

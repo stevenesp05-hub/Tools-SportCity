@@ -314,6 +314,184 @@ div[data-callout][data-tone='ok'] {
   margin: 0;
   border-bottom: 1px solid var(--sc-line);
 }
+/* Una lista que continúa la anterior (start="11") arranca su contador donde toca. */
+.doc-sheet .ProseMirror ol[start='2'] {
+  counter-reset: rule 1;
+}
+.doc-sheet .ProseMirror ol[start='3'] {
+  counter-reset: rule 2;
+}
+.doc-sheet .ProseMirror ol[start='4'] {
+  counter-reset: rule 3;
+}
+.doc-sheet .ProseMirror ol[start='5'] {
+  counter-reset: rule 4;
+}
+.doc-sheet .ProseMirror ol[start='6'] {
+  counter-reset: rule 5;
+}
+.doc-sheet .ProseMirror ol[start='7'] {
+  counter-reset: rule 6;
+}
+.doc-sheet .ProseMirror ol[start='8'] {
+  counter-reset: rule 7;
+}
+.doc-sheet .ProseMirror ol[start='9'] {
+  counter-reset: rule 8;
+}
+.doc-sheet .ProseMirror ol[start='10'] {
+  counter-reset: rule 9;
+}
+.doc-sheet .ProseMirror ol[start='11'] {
+  counter-reset: rule 10;
+}
+.doc-sheet .ProseMirror ol[start='12'] {
+  counter-reset: rule 11;
+}
+.doc-sheet .ProseMirror ol[start='13'] {
+  counter-reset: rule 12;
+}
+.doc-sheet .ProseMirror ol[start='14'] {
+  counter-reset: rule 13;
+}
+.doc-sheet .ProseMirror ol[start='15'] {
+  counter-reset: rule 14;
+}
+.doc-sheet .ProseMirror ol[start='16'] {
+  counter-reset: rule 15;
+}
+.doc-sheet .ProseMirror ol[start='17'] {
+  counter-reset: rule 16;
+}
+.doc-sheet .ProseMirror ol[start='18'] {
+  counter-reset: rule 17;
+}
+.doc-sheet .ProseMirror ol[start='19'] {
+  counter-reset: rule 18;
+}
+.doc-sheet .ProseMirror ol[start='20'] {
+  counter-reset: rule 19;
+}
+.doc-sheet .ProseMirror ol[start='21'] {
+  counter-reset: rule 20;
+}
+.doc-sheet .ProseMirror ol[start='22'] {
+  counter-reset: rule 21;
+}
+.doc-sheet .ProseMirror ol[start='23'] {
+  counter-reset: rule 22;
+}
+.doc-sheet .ProseMirror ol[start='24'] {
+  counter-reset: rule 23;
+}
+.doc-sheet .ProseMirror ol[start='25'] {
+  counter-reset: rule 24;
+}
+.doc-sheet .ProseMirror ol[start='26'] {
+  counter-reset: rule 25;
+}
+.doc-sheet .ProseMirror ol[start='27'] {
+  counter-reset: rule 26;
+}
+.doc-sheet .ProseMirror ol[start='28'] {
+  counter-reset: rule 27;
+}
+.doc-sheet .ProseMirror ol[start='29'] {
+  counter-reset: rule 28;
+}
+.doc-sheet .ProseMirror ol[start='30'] {
+  counter-reset: rule 29;
+}
+.doc-sheet .ProseMirror ol[start='31'] {
+  counter-reset: rule 30;
+}
+.doc-sheet .ProseMirror ol[start='32'] {
+  counter-reset: rule 31;
+}
+.doc-sheet .ProseMirror ol[start='33'] {
+  counter-reset: rule 32;
+}
+.doc-sheet .ProseMirror ol[start='34'] {
+  counter-reset: rule 33;
+}
+.doc-sheet .ProseMirror ol[start='35'] {
+  counter-reset: rule 34;
+}
+.doc-sheet .ProseMirror ol[start='36'] {
+  counter-reset: rule 35;
+}
+.doc-sheet .ProseMirror ol[start='37'] {
+  counter-reset: rule 36;
+}
+.doc-sheet .ProseMirror ol[start='38'] {
+  counter-reset: rule 37;
+}
+.doc-sheet .ProseMirror ol[start='39'] {
+  counter-reset: rule 38;
+}
+.doc-sheet .ProseMirror ol[start='40'] {
+  counter-reset: rule 39;
+}
+.doc-sheet .ProseMirror ol[start='41'] {
+  counter-reset: rule 40;
+}
+.doc-sheet .ProseMirror ol[start='42'] {
+  counter-reset: rule 41;
+}
+.doc-sheet .ProseMirror ol[start='43'] {
+  counter-reset: rule 42;
+}
+.doc-sheet .ProseMirror ol[start='44'] {
+  counter-reset: rule 43;
+}
+.doc-sheet .ProseMirror ol[start='45'] {
+  counter-reset: rule 44;
+}
+.doc-sheet .ProseMirror ol[start='46'] {
+  counter-reset: rule 45;
+}
+.doc-sheet .ProseMirror ol[start='47'] {
+  counter-reset: rule 46;
+}
+.doc-sheet .ProseMirror ol[start='48'] {
+  counter-reset: rule 47;
+}
+.doc-sheet .ProseMirror ol[start='49'] {
+  counter-reset: rule 48;
+}
+.doc-sheet .ProseMirror ol[start='50'] {
+  counter-reset: rule 49;
+}
+.doc-sheet .ProseMirror ol[start='51'] {
+  counter-reset: rule 50;
+}
+.doc-sheet .ProseMirror ol[start='52'] {
+  counter-reset: rule 51;
+}
+.doc-sheet .ProseMirror ol[start='53'] {
+  counter-reset: rule 52;
+}
+.doc-sheet .ProseMirror ol[start='54'] {
+  counter-reset: rule 53;
+}
+.doc-sheet .ProseMirror ol[start='55'] {
+  counter-reset: rule 54;
+}
+.doc-sheet .ProseMirror ol[start='56'] {
+  counter-reset: rule 55;
+}
+.doc-sheet .ProseMirror ol[start='57'] {
+  counter-reset: rule 56;
+}
+.doc-sheet .ProseMirror ol[start='58'] {
+  counter-reset: rule 57;
+}
+.doc-sheet .ProseMirror ol[start='59'] {
+  counter-reset: rule 58;
+}
+.doc-sheet .ProseMirror ol[start='60'] {
+  counter-reset: rule 59;
+}
 .doc-sheet .ProseMirror ol > li:last-child {
   border-bottom: none;
 }
@@ -613,6 +791,35 @@ div[data-callout][data-tone='ok'] {
   color: var(--sc-gray);
   text-decoration: line-through;
 }
+/* Puntos de firma: espacio en blanco arriba, línea para firmar y leyenda debajo. */
+.doc-sheet .ProseMirror div[data-signatures] {
+  display: flex;
+  gap: 0.55in;
+  margin: 0.2in 0 0.16in;
+  break-inside: avoid;
+}
+.doc-sheet .ProseMirror div[data-signature] {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0.6in;
+  padding-top: 5px;
+  border-top: 1.5px solid var(--sc-ink);
+  text-align: center;
+}
+.doc-sheet .ProseMirror div[data-signature] p {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: var(--sc-gray);
+}
+.doc-sheet .ProseMirror div[data-signature] p:first-child {
+  color: var(--sc-ink);
+  font-weight: 600;
+}
+.doc-sheet .ProseMirror div[data-signatures].ProseMirror-selectednode {
+  outline: 2px solid var(--sc-accent-ink);
+  outline-offset: 4px;
+}
 .doc-sheet .ProseMirror div[data-page-break] {
   position: relative;
   height: 0;
@@ -638,6 +845,43 @@ div[data-callout][data-tone='ok'] {
 }
 .doc-sheet .ProseMirror div[data-page-break].ProseMirror-selectednode::after {
   outline: 2px solid var(--sc-navy);
+}
+/*
+ * Sin hojas (pantalla estrecha o «Vista continua») el salto no puede mostrarse como una hoja nueva, y la
+ * etiqueta del margen derecho queda fuera de la pantalla. Se dibuja entonces como una división de ancho
+ * completo, que se ve claramente y deja espacio antes de lo que sigue.
+ */
+.doc-sheet[data-compact='true'] .ProseMirror div[data-page-break],
+.doc-sheet[data-continuous='true'] .ProseMirror div[data-page-break] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.6rem;
+  margin: 0.9rem 0;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.doc-sheet[data-compact='true'] .ProseMirror div[data-page-break]::before,
+.doc-sheet[data-continuous='true'] .ProseMirror div[data-page-break]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 2px dashed var(--sc-accent-ink);
+  opacity: 0.55;
+}
+.doc-sheet[data-compact='true'] .ProseMirror div[data-page-break]::after,
+.doc-sheet[data-continuous='true'] .ProseMirror div[data-page-break]::after {
+  content: 'Salto de página · lo siguiente va en una hoja nueva';
+  position: relative;
+  right: auto;
+  top: auto;
+  z-index: 1;
+  font-size: 9px;
+  padding: 4px 12px;
+  white-space: normal;
+  text-align: center;
 }
 .doc-sheet .ProseMirror .search-match {
   background: #fff3b0;
@@ -1517,4 +1761,29 @@ div[data-callout][data-tone='cta'] > p:first-child {
   padding-top: 3px;
   padding-bottom: 3px;
   vertical-align: middle;
+}
+
+/* Móvil: texto de 16 px (evita el zoom automático al escribir en iOS y se lee sin forzar la vista) y tablas que se desplazan */
+.doc-sheet[data-compact='true'] .ProseMirror {
+  font-size: 16px;
+  line-height: 1.6;
+}
+.doc-sheet[data-compact='true'] .ProseMirror h2 {
+  font-size: 17px;
+}
+.doc-sheet[data-compact='true'] .ProseMirror h3 {
+  font-size: 16px;
+}
+.doc-sheet[data-compact='true'] .ProseMirror table {
+  table-layout: auto;
+  width: max-content;
+  min-width: 100%;
+  font-size: 14px;
+}
+.doc-sheet[data-compact='true'] .ProseMirror th,
+.doc-sheet[data-compact='true'] .ProseMirror td {
+  min-width: 6.5rem;
+}
+.doc-sheet[data-compact='true'] .ProseMirror th {
+  font-size: 11px;
 }

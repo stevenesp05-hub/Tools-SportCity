@@ -162,6 +162,8 @@ div[data-tone=warn]{border-left-color:#c2542b}div[data-tone=ok]{border-left-colo
 ul[data-type=taskList]{list-style:none;padding-left:0}ul[data-type=taskList] li{display:flex;gap:8px}
 ul[data-type=taskList] li::before{content:'☐'}ul[data-type=taskList] li[data-checked=true]::before{content:'☑'}
 div[data-page-break]{break-after:page}
+div[data-signatures]{display:flex;gap:40px;margin:16px 0;break-inside:avoid}div[data-signature]{flex:1;margin-top:48px;padding-top:5px;border-top:1.5px solid #1b1b3a;text-align:center}
+div[data-signature] p{margin:0;font-size:12px;color:#6a70a0}div[data-signature] p:first-child{color:#1b1b3a;font-weight:600}
 </style></head><body>
 <div class="kicker">${escapeAttr(input.folderName)}</div>
 <h1>${escapeAttr(input.title)}</h1>

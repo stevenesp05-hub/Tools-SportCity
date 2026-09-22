@@ -437,6 +437,7 @@ h1, h2, h3, h4 { font-family: "Sora", sans-serif; font-weight: 800; letter-spaci
 .body ol { list-style: none; padding: 0; margin: 0 0 0.2in 0; counter-reset: rule; }
 .body ol > li { counter-increment: rule; display: flex; gap: 0.16in; padding: 0.09in 0; border-bottom: 1px solid var(--line); margin: 0; }
 .body ol > li:last-child { border-bottom: none; }
+${Array.from({ length: 59 }, (_, i) => `.body ol[start="${i + 2}"] { counter-reset: rule ${i + 1}; }`).join('\n')}
 .body ol > li::before { content: counter(rule); font-family: "Sora"; font-weight: 800; font-size: 13px; color: var(--accent-ink); width: 0.3in; flex: none; }
 .body ol > li > p { flex: 1; }
 .body ol > li strong { font-family: "Sora"; font-weight: 700; font-size: 12px; color: var(--navy); }
@@ -478,6 +479,11 @@ h1, h2, h3, h4 { font-family: "Sora", sans-serif; font-weight: 800; letter-spaci
 .body ul[data-type='taskList'] > li[data-checked='true'] > div { color: var(--gray); text-decoration: line-through; }
 .body ul[data-type='taskList'] > li > div { flex: 1; }
 .body div[data-page-break] { break-after: page; height: 0; margin: 0; }
+.body div[data-signatures] { display: flex; gap: 0.55in; margin: 0.2in 0 0.16in; break-inside: avoid; }
+.body div[data-signature] { flex: 1; min-width: 0; margin-top: 0.6in; padding-top: 5px; border-top: 1.5px solid var(--ink, #1b1b3a); text-align: center; }
+.body div[data-signature] p { margin: 0; font-size: 10.5px; line-height: 1.35; color: var(--t-gray); }
+.body div[data-signature] p:first-child { color: var(--ink, #1b1b3a); font-weight: 600; }
+
 
 /* Tablas con grosor y color de líneas elegidos en el editor */
 .body table[data-border] { --bw: 1px; --bc: var(--t-rule); border-collapse: collapse; }

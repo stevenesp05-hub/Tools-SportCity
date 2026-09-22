@@ -15,6 +15,8 @@ export type ShareLink = {
   expiresAt: string | null
   revokedAt: string | null
   active: boolean
+  /** El PDF de este enlace no muestra autor ni aprobador. */
+  hideAuthorship: boolean
 }
 
 export const listShares = createServerFn({ method: 'GET' })
@@ -22,11 +24,20 @@ export const listShares = createServerFn({ method: 'GET' })
   .validator(z.object({ documentId: z.string().min(1) }))
   .handler(async ({ context, data }): Promise<ShareLink[]> => {
     assertPermission(context.user.role, 'tools.documentos.editar')
-    const { data: rows, error } = await context.supabase
-      .from('document_shares')
-      .select('id, token, created_at, expires_at, revoked_at')
-      .eq('document_id', data.documentId)
-      .order('created_at', { ascending: false })
+    const query = (columns: string) =>
+      context.supabase
+        .from('document_shares')
+        .select(columns)
+        .eq('document_id', data.documentId)
+        .order('created_at', { ascending: false })
+    // Sin la migración 0022 no existe hide_authorship: se lee igual, sin esa columna.
+    let { data: rows, error } = await query(
+      'id, token, created_at, expires_at, revoked_at, hide_authorship',
+    )
+    if (error)
+      ({ data: rows, error } = await query(
+        'id, token, created_at, expires_at, revoked_at',
+      ))
     if (error) return []
     const now = Date.now()
     return (
@@ -36,6 +47,7 @@ export const listShares = createServerFn({ method: 'GET' })
         created_at: string
         expires_at: string | null
         revoked_at: string | null
+        hide_authorship?: boolean
       }>
     ).map((r) => ({
       id: r.id,
@@ -43,6 +55,7 @@ export const listShares = createServerFn({ method: 'GET' })
       createdAt: r.created_at,
       expiresAt: r.expires_at,
       revokedAt: r.revoked_at,
+      hideAuthorship: r.hide_authorship === true,
       active:
         !r.revoked_at &&
         (!r.expires_at || new Date(r.expires_at).getTime() > now),
@@ -55,10 +68,14 @@ export const createShare = createServerFn({ method: 'POST' })
     z.object({
       documentId: z.string().min(1),
       days: z.number().int().min(1).max(365).nullable(),
+      hideAuthorship: z.boolean().optional(),
     }),
   )
   .handler(async ({ context, data }) => {
     assertPermission(context.user.role, 'tools.documentos.editar')
+    // Ocultar autor y aprobador es decisión del administrador.
+    if (data.hideAuthorship)
+      assertPermission(context.user.role, 'tools.admin.gestionar_acceso')
     const bytes = new Uint8Array(24)
     crypto.getRandomValues(bytes)
     const token = Buffer.from(bytes).toString('base64url')
@@ -70,8 +87,15 @@ export const createShare = createServerFn({ method: 'POST' })
       token,
       created_by: context.user.id,
       expires_at: expiresAt,
+      // Solo se envía si se pide: así crear enlaces normales no depende de la migración 0022.
+      ...(data.hideAuthorship ? { hide_authorship: true } : {}),
     })
-    if (error) throw new Error(error.message)
+    if (error)
+      throw new Error(
+        /hide_authorship/.test(error.message)
+          ? 'Falta ejecutar la migración 0022_compartir_sin_autoria.sql en Supabase.'
+          : error.message,
+      )
     return { token }
   })
 

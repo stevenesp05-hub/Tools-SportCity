@@ -32,8 +32,11 @@ export function NotFoundPage() {
   )
 }
 
-export function ErrorPage({ error }: ErrorComponentProps) {
+export function ErrorPage({ error, info }: ErrorComponentProps) {
   const router = useRouter()
+  // En desarrollo, además del mensaje, se muestra dónde falló para poder localizarlo sin abrir la consola.
+  if (import.meta.env.DEV)
+    console.error('[ErrorPage]', error, info?.componentStack)
   return (
     <Shell title="Algo ha salido mal">
       <p className="max-w-md text-sm text-muted-foreground">
@@ -41,8 +44,14 @@ export function ErrorPage({ error }: ErrorComponentProps) {
         avisa a quien administra el sistema.
       </p>
       {import.meta.env.DEV && (
-        <pre className="max-w-xl overflow-auto rounded-md bg-muted px-3 py-2 text-left text-xs text-muted-foreground">
+        <pre className="max-h-80 max-w-2xl overflow-auto whitespace-pre-wrap rounded-md bg-muted px-3 py-2 text-left text-xs text-muted-foreground">
           {error instanceof Error ? error.message : String(error)}
+          {error instanceof Error && error.stack
+            ? `\n\n${error.stack.split('\n').slice(1, 12).join('\n')}`
+            : ''}
+          {info?.componentStack
+            ? `\n\nComponentes:${info.componentStack.split('\n').slice(0, 8).join('\n')}`
+            : ''}
         </pre>
       )}
       <div className="flex gap-2">

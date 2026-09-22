@@ -130,3 +130,135 @@ describe('importación de HTML con portada', () => {
     expect(html).not.toContain('Sport City Club · Procedimiento')
   })
 })
+
+describe('importación: colores modernos', () => {
+  it('lee oklch() (el azul de marca y sus variantes)', async () => {
+    const { toHex } = await import('../import-html')
+    // Los valores de marca de Sport City: azul marino y celeste.
+    expect(toHex('oklch(0.24 0.14 275)')).toMatch(/^#[0-9a-f]{6}$/)
+    expect(toHex('oklch(0.83 0.08 240.12)')).toMatch(/^#[0-9a-f]{6}$/)
+    expect(toHex('oklch(1 0 0)')).toBe('#ffffff')
+    expect(toHex('oklch(0 0 0)')).toBe('#000000')
+    // Con transparencia casi total no cuenta como color.
+    expect(toHex('oklch(0.5 0.1 200 / 0.05)')).toBeNull()
+    expect(toHex('oklch(no es un color)')).toBeNull()
+  })
+})
+
+describe('importación: HTML de marca con variables CSS y oklch', () => {
+  it('resuelve var(--x) y convierte oklch() antes de leer los estilos', async () => {
+    const { resolveModernCss } = await import('../import-html')
+    const out = resolveModernCss(
+      '<style>:root{--navy:oklch(0.24 0.14 275);--main:var(--navy)}.a{background:var(--main)}.b{color:var(--falta,#123456)}</style>',
+    )
+    expect(out).not.toContain('var(')
+    expect(out).not.toContain('oklch(')
+    expect(out).toMatch(/\.a\{background:#[0-9a-f]{6}\}/)
+    expect(out).toContain('.b{color:#123456}')
+  })
+
+  it('la normativa de la liga conserva el azul de marca, las tarjetas y su texto', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { convertStyledHtml } = await import('../import-html')
+    const source = readFileSync(
+      new URL('../../../material/normativa.html', import.meta.url),
+      'utf8',
+    )
+    const { html, campaign } = convertStyledHtml(source)
+    expect(campaign).toBe(true)
+    // El azul marino (oklch en el original) llega como color real al banner y a las cabeceras.
+    expect(html.toLowerCase()).toContain('#14065f')
+    for (const frase of [
+      'Cuido de instalaciones',
+      'Juego ganado',
+      'Forfait',
+      'C$ 100',
+    ])
+      expect(html).toContain(frase)
+  })
+})
+
+describe('importación: listas numeradas', () => {
+  it('una lista que continúa la anterior conserva su número inicial', async () => {
+    const { convertStyledHtml } = await import('../import-html')
+    const { sanitizeContentHtml } = await import('../sanitize.server')
+    const { html } = convertStyledHtml(
+      '<ol><li>Uno</li><li>Dos</li></ol><p>Otro capítulo</p><ol start="3"><li>Tres</li><li>Cuatro</li></ol>',
+    )
+    expect(html).toContain('<ol start="3">')
+    // El saneado (al importar, guardar o exportar a PDF) no debe quitar el número inicial.
+    expect(sanitizeContentHtml(html)).toContain('<ol start="3">')
+    const json = generateJSON(sanitizeContentHtml(html), SCHEMA_EXTENSIONS)
+    const lists = (json.content ?? []).filter(
+      (n: { type?: string }) => n.type === 'orderedList',
+    ) as Array<{ attrs?: { start?: number } }>
+    expect(lists[1].attrs?.start).toBe(3)
+  })
+})
+
+describe('importación: normativa formal', () => {
+  it('conserva capítulos, tablas de marca y la numeración de cláusulas de corrido', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { convertStyledHtml } = await import('../import-html')
+    const source = readFileSync(
+      new URL('../../../material/normativa-formal.html', import.meta.url),
+      'utf8',
+    )
+    const { html, campaign } = convertStyledHtml(source)
+    expect(campaign).toBe(true)
+    for (const inicio of ['11', '15', '18', '20'])
+      expect(html).toContain(`<ol start="${inicio}">`)
+    for (const frase of [
+      'Disposiciones generales',
+      'Formato de protesta oficial',
+      'Juego ganado',
+      'C$100',
+      'C$1,680',
+    ])
+      expect(html).toContain(frase)
+    // Las tablas de datos llevan el azul de marca en su cabecera.
+    expect(html.toLowerCase()).toContain('#1e1a6b')
+  })
+})
+
+describe('importación: avisos y resolución de partido', () => {
+  it('conserva los avisos del editor con su tono y descarta tonos desconocidos', async () => {
+    const { convertStyledHtml } = await import('../import-html')
+    const { html } = convertStyledHtml(
+      '<body><div data-callout data-tone="warn"><p>Cuidado</p></div><div data-callout data-tone="raro"><p>Otro</p></div></body>',
+    )
+    expect(html).toContain(
+      '<div data-callout data-tone="warn"><p>Cuidado</p></div>',
+    )
+    expect(html).toContain(
+      '<div data-callout data-tone="info"><p>Otro</p></div>',
+    )
+  })
+
+  it('la resolución de partido se importa con el modelo corporativo (sin activar «Campaña»)', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { convertStyledHtml } = await import('../import-html')
+    const source = readFileSync(
+      new URL(
+        '../../../material/Resolución de partido jornada 2.html',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    const { html, campaign } = convertStyledHtml(source)
+    // Tema Corporativo: no debe detectarse como banner de campaña.
+    expect(campaign).toBe(false)
+    for (const frase of [
+      'Datos del partido',
+      'Suspensión del encuentro',
+      'Nica Sport vs Óptima Cargo',
+      'Miguel Barquero',
+      'José Carlos Meza',
+      'tres (3) fechas',
+      'cumplimiento obligatorio',
+    ])
+      expect(html).toContain(frase)
+    expect(html).toContain('<div data-callout data-tone="warn">')
+    expect(html).toContain('<div data-signatures>')
+  })
+})

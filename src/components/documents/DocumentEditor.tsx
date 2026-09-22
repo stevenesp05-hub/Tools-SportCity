@@ -20,6 +20,7 @@ import {
 import {
   BlockEditing,
   BlockMove,
+  PageBreakShortcut,
   SearchReplace,
   TableFormulas,
   TableSemantics,
@@ -147,6 +148,7 @@ export function DocumentEditor({
       TableSemantics,
       RowResize,
       BlockEditing,
+      PageBreakShortcut,
       createSlashMenu(setSlash),
       createDocLinkMenu(setSlash),
       Pagination.configure({
@@ -237,7 +239,11 @@ export function DocumentEditor({
   useEffect(() => {
     if (!editor) return
     editor.setEditable(editable)
-    if (editable) editor.commands.focus(null, { scrollIntoView: false })
+    // Se enfoca la vista directamente y sin desplazar la pantalla. `commands.focus` prepara su transacción
+    // antes de enfocar; en Safari enfocar dispara al instante otra (el editor añade un párrafo final al
+    // abrir un documento que acaba en tabla, firmas…) y la primera llegaba desfasada:
+    // «Applying a mismatched transaction» al pulsar Editar.
+    if (editable) editor.view.focus()
   }, [editor, editable])
 
   // El título solo cambia el texto de cabeceras y pies: se repinta tras una pausa, sin reconstruir los saltos.

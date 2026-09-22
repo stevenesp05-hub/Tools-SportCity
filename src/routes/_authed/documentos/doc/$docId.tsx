@@ -938,6 +938,7 @@ function DocumentPage() {
               documentId={docId}
               open={shareOpen}
               onOpenChange={setShareOpen}
+              canHideAuthorship={canManageAccess}
             />
           </Suspense>
         )}
