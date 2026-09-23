@@ -8,7 +8,11 @@ const IN = 96
 export const PAGE_CONTENT_PX = 9.1 * IN
 export const FOOT_PX = 0.85 * IN
 export const HEAD_PX = 1.05 * IN
-export const DESK_GAP_PX = 40
+// Con poco hueco, la sombra que cae del pie de una hoja y la que sube hacia la cabecera de la
+// siguiente (cada una con ~18px de difuminado) se tocan y se funden en un degradado continuo — ya no
+// se ven como 2 hojas separadas con un hueco limpio entre ellas. Le pasa sobre todo a una página cuyo
+// contenido la llena casi entera (el hueco antes del pie llega casi a 0). 64px deja margen de sobra.
+export const DESK_GAP_PX = 64
 /** Lo que ocupa el "cambio de hoja" además del espacio en blanco que sobra: pie + hueco + cabecera. */
 export const PAGE_CHROME_PX = FOOT_PX + DESK_GAP_PX + HEAD_PX
 
@@ -326,7 +330,11 @@ function measure(view: EditorView, options: PaginationOptions) {
         head: unit.head,
         headH: unit.headH,
       })
-      const shift = fill + unit.headH
+      // El hueco insertado mide `fill + PAGE_CHROME_PX` de alto (ver buildGap) — no solo `fill`. Sin
+      // sumar PAGE_CHROME_PX aquí, todo lo que viene detrás en este mismo cálculo (antes de que el
+      // hueco real llegue a pintarse y se pueda volver a medir con datos reales) se sitúa más arriba
+      // de lo que de verdad va a quedar, y con una tabla larga eso descuadra el resto de la página.
+      const shift = fill + PAGE_CHROME_PX + unit.headH
       offset += shift
       top += shift
       bottom += shift
@@ -468,6 +476,17 @@ export const Pagination = Extension.create<PaginationOptions>({
           view.dom.addEventListener('load', onLoad, true)
           void document.fonts.ready.then(schedule)
           schedule()
+          // La primera medición se hace sin huecos todavía en el DOM (measure() los descuenta leyendo
+          // los que YA están pintados): al insertar el primer salto de página, el hueco en sí cambia la
+          // altura de la tabla, así que hace falta una segunda pasada para tenerlo en cuenta. Debería
+          // disparase sola vía el ResizeObserver, pero si esa segunda pasada coincide con un frame en el
+          // que el navegador aún no ha terminado de aplicar la decoración recién insertada, se queda mal
+          // calculada — y ahí se queda, porque nada la vuelve a pedir hasta el próximo cambio real del
+          // documento. Un par de pasadas de más, con margen, evita que se quede a medias.
+          const settle = [
+            window.setTimeout(schedule, 200),
+            window.setTimeout(schedule, 600),
+          ]
           return {
             // Solo un cambio del documento altera la paginación; las selecciones no se miden
             // (el tamaño, las fuentes y las imágenes ya avisan por su cuenta).
@@ -476,6 +495,7 @@ export const Pagination = Extension.create<PaginationOptions>({
             },
             destroy() {
               if (frame) cancelAnimationFrame(frame)
+              settle.forEach(window.clearTimeout)
               titleSync.delete(view)
               resize.disconnect()
               view.dom.removeEventListener('load', onLoad, true)

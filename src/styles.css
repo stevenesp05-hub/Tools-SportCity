@@ -520,11 +520,34 @@ div[data-callout][data-tone='ok'] {
   border-radius: 0 8px 8px 0;
 }
 .doc-sheet .ProseMirror .tableWrapper {
-  overflow: visible;
+  /* Segundo tope, en el contenedor y no en la propia tabla: Safari a veces no aplica bien un
+     `max-width` puesto directamente sobre una tabla con `table-layout: fixed` hasta que algo fuerza
+     un reflow (por eso hacer zoom "arregla" la tabla). Constreñir aquí, con un elemento normal de
+     bloque, no depende de esa particularidad de Safari con las tablas.
+     `hidden` y no `auto`: con `auto` cualquier gesto lateral del trackpad (muy fácil sin querer, al
+     bajar en diagonal) desplaza la tabla y se queda así — parece cortada por la izquierda para
+     siempre, sin ninguna barra visible que avise de que se puede volver a desplazar. Con el ancho
+     máximo de la tabla ya puesto arriba, una tabla bien dimensionada nunca necesita desplazarse. */
+  max-width: 100%;
+  overflow: hidden;
   margin: 0.06in 0 0.2in;
+}
+/* Cuando el salto de página cae DENTRO de esta tabla (fila page-gap-row), el hueco/pie/cabecera
+   necesita salirse de la caja (más estrecha) de la tabla para llegar al ancho real de la hoja — ver
+   `.page-gap` más abajo, que usa márgenes negativos para eso. `overflow: hidden` de la regla de
+   arriba lo recorta igualmente aunque `.page-gap` tenga su propio `overflow: visible`, porque el
+   recorte lo aplica el antecesor sobre cualquier descendiente en flujo normal. Se relaja solo en
+   este caso (nunca `auto`/`scroll`, así que no reintroduce el desplazamiento accidental de trackpad
+   que `hidden` vino a arreglar) y solo para la tabla que de verdad tiene el salto dentro. */
+.doc-sheet .ProseMirror .tableWrapper:has(.page-gap-row) {
+  overflow: visible;
 }
 .doc-sheet .ProseMirror table {
   width: 100%;
+  /* Tope de seguridad: si el ancho guardado (o el que calcula el motor de tablas al vuelo) se pasa de
+     la página por cualquier motivo, esto la encoge de vuelta en vez de dejarla salirse del documento.
+     `max-width` no lo pisa un `style="width: …px"` puesto por JS: son propiedades distintas. */
+  max-width: 100%;
   border-collapse: collapse;
   font-size: 11px;
   table-layout: fixed;

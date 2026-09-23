@@ -58,6 +58,7 @@ import {
 } from '#/lib/editor-extensions'
 import {
   currentCell,
+  equalizeRowHeights,
   formulaAvgAbove,
   formulaSumAbove,
   formulaSumLeft,
@@ -437,6 +438,13 @@ function TableBar({ editor }: { editor: Editor }) {
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => chain().addRowAfter().run()}>
           Insertar fila debajo
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onSelect={() => equalizeRowHeights(editor)}
+          title="Quita el alto fijado a mano: si cada fila tiene una sola línea, quedan todas iguales"
+        >
+          Misma altura para todas las filas
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => chain().toggleHeaderRow().run()}>

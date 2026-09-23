@@ -121,10 +121,16 @@ export function DocumentEditor({
   const titleRef = useRef(title)
   titleRef.current = title
   const [pages, setPages] = useState(1)
-  // En pantallas estrechas se edita en vista continua (sin marco de página ni saltos simulados).
+  // En pantallas estrechas (móvil/tablet) se edita en vista continua, sin marco de página ni saltos
+  // simulados. Se exige además que el dispositivo sea táctil sin ratón (puntero «coarse» y sin hover):
+  // el ancho de ventana por sí solo no distingue un móvil de un escritorio con zoom por encima del
+  // 100%, que también reduce `innerWidth` — sin este filtro, hacer zoom en el navegador activaba por
+  // error esta vista (que fuerza `table-layout: auto` en las tablas) y descuadraba las tablas.
   const [compact, setCompact] = useState(false)
   useEffect(() => {
-    const query = window.matchMedia('(max-width: 820px)')
+    const query = window.matchMedia(
+      '(max-width: 820px) and (pointer: coarse) and (hover: none)',
+    )
     const sync = () => setCompact(query.matches)
     sync()
     query.addEventListener('change', sync)
@@ -511,7 +517,14 @@ export function DocumentEditor({
               !editable && onRequestEdit ? 'Haz clic para editar' : undefined
             }
             className={cn(
-              'doc-sheet relative mx-auto w-[8.5in] max-w-full bg-[var(--sc-paper)] shadow-md',
+              // Sin `max-w-full`: la hoja mide siempre 8.5in de verdad, como una hoja de papel. Antes,
+              // si la ventana (o el zoom del navegador, que también reduce el ancho disponible) no
+              // dejaba sitio, esto la encogía — y con eso, el ancho en px de las columnas de las tablas
+              // y los saltos de página (calculados para 8.5in) dejaban de cuadrar con lo que se veía.
+              // Ahora, si no cabe, el panel que la contiene (ya tiene scroll propio) se desplaza en
+              // horizontal, igual que una hoja real en cualquier editor de documentos. En vista
+              // compacta (móvil) esto no aplica: esa regla fuerza su propio ancho con `!important`.
+              'doc-sheet relative mx-auto w-[8.5in] bg-[var(--sc-paper)] shadow-md',
               editable
                 ? 'cursor-text ring-2 ring-primary/25'
                 : onRequestEdit &&

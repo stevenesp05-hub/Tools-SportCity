@@ -1,8 +1,9 @@
 import { memo, useEffect, useMemo, useState } from 'react'
 import type { JSONContent } from '@tiptap/react'
-import { GitCompare, History, RotateCcw } from 'lucide-react'
+import { ArrowLeft, GitCompare, History, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
-import { htmlToText } from '#/lib/document-text'
+import { initialsOf } from '#/lib/format'
+import { cn } from '#/lib/utils'
 import {
   VERSIONS_PAGE,
   getDocumentVersion,
@@ -11,12 +12,7 @@ import {
 } from '#/server/documents'
 import { Button } from '#/components/ui/button'
 import { useDialogs } from '#/components/ui/dialogs'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '#/components/ui/dialog'
 import { ScrollArea } from '#/components/ui/scroll-area'
 
 type VersionRow = {
@@ -26,42 +22,92 @@ type VersionRow = {
   profiles: { full_name: string | null; email: string } | null
 }
 
-type View =
-  | { kind: 'preview'; versionNumber: number; html: string }
-  | {
-      kind: 'diff'
-      versionNumber: number
-      currentNumber: number
-      olderText: string
-      latestText: string
-    }
+type Content =
+  | { kind: 'preview'; html: string }
+  | { kind: 'diff'; olderHtml: string; latestHtml: string }
 
-/** Diferencia palabra a palabra; solo se calcula (y solo se descarga `diff`) cuando se abre una comparación. */
+/** Cabecera de grupo como en Google Docs: "Hoy", "Ayer" o la fecha completa. */
+function dateGroupOf(iso: string, now: number = Date.now()): string {
+  const sameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  const d = new Date(iso)
+  const today = new Date(now)
+  if (sameDay(d, today)) return 'Hoy'
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (sameDay(d, yesterday)) return 'Ayer'
+  return d.toLocaleDateString('es-NI', {
+    day: 'numeric',
+    month: 'long',
+    year: d.getFullYear() === today.getFullYear() ? undefined : 'numeric',
+  })
+}
+
+const timeOf = (iso: string) =>
+  new Date(iso).toLocaleTimeString('es-NI', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+
+/**
+ * Divide el HTML de un documento en sus bloques de primer nivel (párrafos, encabezados, listas,
+ * tablas…) conservando el marcado de cada uno intacto. Comparar por bloque entero (en vez de por
+ * palabra sobre texto plano) es lo que permite pintar el comparativo como una página real, con sus
+ * encabezados y tablas, en vez de una tira de texto sin formato.
+ */
+function splitHtmlBlocks(html: string): string[] {
+  const blocks: string[] = []
+  const tableRe = /<table[\s\S]*?<\/table>/gi
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+  while ((match = tableRe.exec(html))) {
+    blocks.push(...splitSimpleBlocks(html.slice(lastIndex, match.index)))
+    blocks.push(match[0])
+    lastIndex = tableRe.lastIndex
+  }
+  blocks.push(...splitSimpleBlocks(html.slice(lastIndex)))
+  return blocks
+}
+
+function splitSimpleBlocks(html: string): string[] {
+  return html
+    .split(/(?<=<\/(?:p|h[1-6]|li|blockquote|ul|ol)>)/gi)
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+/** Compara dos versiones bloque a bloque; solo se calcula cuando se abre la comparación. */
 function DiffView({
-  olderText,
-  latestText,
+  olderHtml,
+  latestHtml,
 }: {
-  olderText: string
-  latestText: string
+  olderHtml: string
+  latestHtml: string
 }) {
-  const [parts, setParts] = useState<Array<{
-    value: string
+  const [changes, setChanges] = useState<Array<{
+    value: string[]
     added?: boolean
     removed?: boolean
   }> | null>(null)
   useEffect(() => {
     let cancelled = false
-    void import('diff').then(({ diffWords }) => {
-      if (!cancelled) setParts(diffWords(olderText, latestText))
+    setChanges(null)
+    void import('diff').then(({ diffArrays }) => {
+      if (cancelled) return
+      setChanges(
+        diffArrays(splitHtmlBlocks(olderHtml), splitHtmlBlocks(latestHtml)),
+      )
     })
     return () => {
       cancelled = true
     }
-  }, [olderText, latestText])
+  }, [olderHtml, latestHtml])
 
   return (
-    <div className="whitespace-pre-wrap text-sm leading-relaxed">
-      <p className="mb-3 text-xs text-muted-foreground">
+    <div className="prose prose-sm max-w-none prose-headings:font-display prose-headings:text-primary">
+      <p className="not-prose mb-4 text-xs text-muted-foreground">
         <span className="rounded-md bg-[oklch(0.93_0.06_150)] px-1">
           añadido
         </span>{' '}
@@ -69,21 +115,20 @@ function DiffView({
           eliminado
         </span>
       </p>
-      {parts === null && <p className="text-muted-foreground">Comparando…</p>}
-      {parts?.map((part, i) => (
-        <span
-          key={i}
-          className={
-            part.added
-              ? 'rounded-md bg-[oklch(0.93_0.06_150)]'
-              : part.removed
-                ? 'rounded-md bg-[oklch(0.94_0.07_40)] line-through'
-                : undefined
-          }
-        >
-          {part.value}
-        </span>
-      ))}
+      {changes === null && <p className="text-muted-foreground">Comparando…</p>}
+      {changes?.map((part, i) =>
+        part.value.map((block, j) => (
+          <div
+            key={`${i}-${j}`}
+            className={cn(
+              part.added && 'rounded-md bg-[oklch(0.93_0.06_150)] px-2',
+              part.removed &&
+                'rounded-md bg-[oklch(0.94_0.07_40)] px-2 opacity-80 line-through decoration-2',
+            )}
+            dangerouslySetInnerHTML={{ __html: block }}
+          />
+        )),
+      )}
     </div>
   )
 }
@@ -114,8 +159,6 @@ export const VersionHistory = memo(function VersionHistory({
     if (controlled) onOpenChange?.(value)
     else setInnerOpen(value)
   }
-  const [view, setView] = useState<View | null>(null)
-  const [busy, setBusy] = useState(false)
 
   // La página trae las últimas versiones; «Cargar más» pide las más antiguas por tandas.
   const [older, setOlder] = useState<VersionRow[]>([])
@@ -130,6 +173,17 @@ export const VersionHistory = memo(function VersionHistory({
     return [...versions, ...older.filter((v) => !seen.has(v.id))]
   }, [versions, older])
   const canLoadMore = !exhausted && allVersions.length >= VERSIONS_PAGE
+
+  const groups = useMemo(() => {
+    const map = new Map<string, VersionRow[]>()
+    for (const v of allVersions) {
+      const label = dateGroupOf(v.created_at)
+      const bucket = map.get(label)
+      if (bucket) bucket.push(v)
+      else map.set(label, [v])
+    }
+    return [...map.entries()]
+  }, [allVersions])
 
   async function loadMore() {
     const last = allVersions[allVersions.length - 1]
@@ -147,45 +201,57 @@ export const VersionHistory = memo(function VersionHistory({
     }
   }
 
-  const current = allVersions.find((v) => v.id === currentVersionId)
+  const current = allVersions.find((v) => v.id === currentVersionId) ?? null
 
-  async function openPreview(v: VersionRow) {
-    setBusy(true)
-    try {
-      const version = await getDocumentVersion({ data: { id: v.id } })
-      setView({
-        kind: 'preview',
-        versionNumber: v.version_number,
-        html: version.content_html,
-      })
-    } finally {
-      setBusy(false)
-    }
-  }
+  // Panel derecho: qué versión se ve y en qué modo (previsualización o comparación con la actual).
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const fallbackId = versions[0]?.id ?? null
+  useEffect(() => {
+    if (open) setSelectedId(currentVersionId ?? fallbackId)
+  }, [open, currentVersionId, fallbackId])
+  const [mode, setMode] = useState<'preview' | 'diff'>('preview')
+  const selected = allVersions.find((v) => v.id === selectedId) ?? null
+  const isCurrentSelected = !!selected && selected.id === current?.id
 
-  async function openDiff(v: VersionRow) {
-    if (!currentVersionId || !current) return
-    setBusy(true)
-    try {
-      const [olderVersion, latest] = await Promise.all([
-        getDocumentVersion({ data: { id: v.id } }),
-        getDocumentVersion({ data: { id: currentVersionId } }),
-      ])
-      setView({
-        kind: 'diff',
-        versionNumber: v.version_number,
-        currentNumber: current.version_number,
-        olderText: htmlToText(olderVersion.content_html),
-        latestText: htmlToText(latest.content_html),
-      })
-    } finally {
-      setBusy(false)
+  const [content, setContent] = useState<Content | null>(null)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    if (!selected) {
+      setContent(null)
+      return
     }
-  }
+    let cancelled = false
+    setBusy(true)
+    setContent(null)
+    const request: Promise<Content> =
+      mode === 'diff' && current && selected.id !== current.id
+        ? Promise.all([
+            getDocumentVersion({ data: { id: selected.id } }),
+            getDocumentVersion({ data: { id: current.id } }),
+          ]).then(([olderVersion, latest]) => ({
+            kind: 'diff',
+            olderHtml: olderVersion.content_html,
+            latestHtml: latest.content_html,
+          }))
+        : getDocumentVersion({ data: { id: selected.id } }).then((version) => ({
+            kind: 'preview',
+            html: version.content_html,
+          }))
+    request
+      .then((result) => {
+        if (!cancelled) setContent(result)
+      })
+      .finally(() => {
+        if (!cancelled) setBusy(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [selected, mode, current])
 
   async function restore(v: VersionRow) {
     const ok = await confirm({
-      title: `¿Restaurar la versión ${v.version_number}?`,
+      title: `¿Restaurar la versión del ${dateGroupOf(v.created_at).toLowerCase()} a las ${timeOf(v.created_at)}?`,
       description:
         'Se guardará como una versión nueva; las demás versiones se conservan.',
       confirmLabel: 'Restaurar',
@@ -198,7 +264,7 @@ export const VersionHistory = memo(function VersionHistory({
       })
       const version = await getDocumentVersion({ data: { id: v.id } })
       onRestored(version.content as JSONContent, saved.versionId)
-      toast.success(`Versión ${v.version_number} restaurada`)
+      toast.success('Versión restaurada')
       setOpen(false)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'No se pudo restaurar')
@@ -217,107 +283,161 @@ export const VersionHistory = memo(function VersionHistory({
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[80vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Historial de versiones</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="h-80 pr-3">
-            <ul className="divide-y divide-border">
-              {allVersions.map((v) => (
-                <li
-                  key={v.id}
-                  className="flex items-center justify-between gap-2 py-2.5 text-sm"
+        <DialogContent
+          showCloseButton={false}
+          className="flex h-[90vh] w-[96vw] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-6xl sm:rounded-2xl"
+        >
+          <DialogTitle className="sr-only">Historial de versiones</DialogTitle>
+
+          {/* Barra superior, al estilo del historial de Google Docs. */}
+          <div className="flex flex-none items-center gap-2 border-b border-border px-3 py-2.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 flex-none"
+              onClick={() => setOpen(false)}
+              aria-label="Volver al documento"
+            >
+              <ArrowLeft className="size-4" />
+            </Button>
+            <History className="size-4 flex-none text-muted-foreground" />
+            <span className="min-w-0 flex-1 truncate font-display text-sm font-semibold text-foreground">
+              Historial de versiones
+            </span>
+            {selected && !isCurrentSelected && (
+              <>
+                <Button
+                  variant={mode === 'diff' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="flex-none"
+                  onClick={() =>
+                    setMode((m) => (m === 'diff' ? 'preview' : 'diff'))
+                  }
                 >
-                  <div className="min-w-0">
-                    <div className="font-medium text-foreground">
-                      Versión {v.version_number}
-                      {v.id === currentVersionId && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          (actual)
-                        </span>
-                      )}
+                  <GitCompare className="size-4" />
+                  Comparar con la actual
+                </Button>
+                {canEdit && (
+                  <Button
+                    size="sm"
+                    className="flex-none"
+                    disabled={busy}
+                    onClick={() => void restore(selected)}
+                  >
+                    <RotateCcw className="size-4" />
+                    Restaurar esta versión
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="flex min-h-0 flex-1">
+            {/* Panel izquierdo: versiones agrupadas por fecha. */}
+            <ScrollArea className="w-64 flex-none border-r border-border bg-secondary/30 sm:w-72">
+              <div className="p-2">
+                {groups.map(([label, rows]) => (
+                  <div key={label} className="mb-3">
+                    <div className="px-2 py-1 font-display text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
+                      {label}
                     </div>
-                    <div className="truncate text-xs text-muted-foreground">
-                      {v.profiles?.full_name ??
-                        v.profiles?.email ??
-                        'Desconocido'}{' '}
-                      · {new Date(v.created_at).toLocaleString('es-NI')}
-                    </div>
+                    <ul>
+                      {rows.map((v) => {
+                        const isSelected = v.id === selectedId
+                        const isCurrent = v.id === current?.id
+                        return (
+                          <li key={v.id}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedId(v.id)
+                                setMode('preview')
+                              }}
+                              className={cn(
+                                'flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm transition-colors',
+                                isSelected
+                                  ? 'bg-primary/10'
+                                  : 'hover:bg-secondary',
+                              )}
+                            >
+                              <span
+                                className={cn(
+                                  'flex size-7 flex-none items-center justify-center rounded-full font-display text-2xs font-bold',
+                                  isSelected
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-accent text-accent-foreground',
+                                )}
+                              >
+                                {initialsOf(
+                                  v.profiles?.full_name ?? v.profiles?.email,
+                                )}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate font-medium text-foreground">
+                                  {timeOf(v.created_at)}
+                                  {isCurrent && (
+                                    <span className="ml-1.5 text-2xs font-normal text-muted-foreground">
+                                      (actual)
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="block truncate text-xs text-muted-foreground">
+                                  {v.profiles?.full_name ??
+                                    v.profiles?.email ??
+                                    'Desconocido'}{' '}
+                                  · v{v.version_number}
+                                </span>
+                              </span>
+                            </button>
+                          </li>
+                        )
+                      })}
+                    </ul>
                   </div>
-                  <div className="flex flex-none items-center gap-1">
+                ))}
+                {canLoadMore && (
+                  <div className="px-1 py-1">
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="w-full"
                       disabled={busy}
-                      onClick={() => openPreview(v)}
+                      onClick={() => void loadMore()}
                     >
-                      Ver
+                      Cargar versiones anteriores
                     </Button>
-                    {v.id !== currentVersionId && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={busy}
-                        onClick={() => openDiff(v)}
-                        title="Comparar con la versión actual"
-                      >
-                        <GitCompare className="size-4" />
-                      </Button>
-                    )}
-                    {canEdit && v.id !== currentVersionId && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={busy}
-                        onClick={() => restore(v)}
-                        title="Restaurar esta versión"
-                      >
-                        <RotateCcw className="size-4" />
-                      </Button>
-                    )}
                   </div>
-                </li>
-              ))}
-            </ul>
-            {canLoadMore && (
-              <div className="py-2 text-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => void loadMore()}
-                >
-                  Cargar versiones anteriores
-                </Button>
+                )}
               </div>
-            )}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+            </ScrollArea>
 
-      <Dialog open={view !== null} onOpenChange={(v) => !v && setView(null)}>
-        <DialogContent className="max-h-[85vh] max-w-3xl overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>
-              {view?.kind === 'diff'
-                ? `Versión ${view.versionNumber} → versión ${view.currentNumber} (actual)`
-                : `Versión ${view?.versionNumber} — solo lectura`}
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="h-[65vh] pr-3">
-            {view?.kind === 'preview' && (
-              <div
-                className="prose prose-sm max-w-none prose-headings:font-display prose-headings:text-primary"
-                dangerouslySetInnerHTML={{ __html: view.html }}
-              />
-            )}
-            {view?.kind === 'diff' && (
-              <DiffView
-                olderText={view.olderText}
-                latestText={view.latestText}
-              />
-            )}
-          </ScrollArea>
+            {/* Panel derecho: la versión seleccionada, como una página real. */}
+            <ScrollArea className="min-w-0 flex-1 bg-[var(--doc-desk)]">
+              <div className="mx-auto max-w-3xl px-6 py-8">
+                {busy && !content && (
+                  <p className="pt-10 text-center text-sm text-muted-foreground">
+                    Cargando…
+                  </p>
+                )}
+                {content?.kind === 'preview' && (
+                  <div className="rounded-xl bg-[var(--sc-paper)] p-10 shadow-md">
+                    <div
+                      className="prose prose-sm max-w-none prose-headings:font-display prose-headings:text-primary"
+                      dangerouslySetInnerHTML={{ __html: content.html }}
+                    />
+                  </div>
+                )}
+                {content?.kind === 'diff' && (
+                  <div className="rounded-xl bg-[var(--sc-paper)] p-10 shadow-md">
+                    <DiffView
+                      olderHtml={content.olderHtml}
+                      latestHtml={content.latestHtml}
+                    />
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
         </DialogContent>
       </Dialog>
     </>

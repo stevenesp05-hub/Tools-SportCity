@@ -50,6 +50,7 @@ import {
 import { LINK_EVENT } from '#/components/documents/SelectionBubble'
 import {
   ALL_BLOCKS,
+  equalizeRowHeights,
   insertTableColumn,
   moveBlock,
 } from '#/components/documents/editor-extras'
@@ -571,6 +572,12 @@ export const DocumentMenuBar = memo(function DocumentMenuBar(props: Props) {
             onSelect={run((e) => chain(e).addRowAfter().run())}
           >
             Insertar fila abajo
+          </MenubarItem>
+          <MenubarItem
+            disabled={off || !inTable}
+            onSelect={run((e) => equalizeRowHeights(e))}
+          >
+            Misma altura para todas las filas
           </MenubarItem>
           <MenubarItem
             disabled={off || !inTable}

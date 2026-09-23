@@ -1670,6 +1670,36 @@ export function applyRowHeight(
   )
 }
 
+/**
+ * Iguala el alto de todas las filas de la tabla actual: quita el alto fijado a mano fila por fila y
+ * las deja en automático. Si el contenido de cada fila es de una sola línea, el alto automático ya
+ * coincide entre todas (mismo tamaño de letra, mismo relleno) y quedan iguales de verdad; una fila con
+ * más texto sigue creciendo lo que necesite, como es de esperar.
+ */
+export function equalizeRowHeights(editor: Editor) {
+  if (!editor.isActive('table')) return false
+  const { state, view } = editor
+  const cellDom = view.domAtPos(state.selection.from).node
+  const el = cellDom instanceof HTMLElement ? cellDom : cellDom.parentElement
+  const table = el?.closest('table')
+  if (!table) return false
+  const positions = tableRowPositions(editor, table)
+  if (!positions) return false
+  const tableNode = editor.state.doc.nodeAt(positions.tablePos)
+  if (tableNode?.type.name !== 'table') return false
+  const tableStart = positions.tablePos + 1
+  const tr = editor.state.tr
+  tableNode.forEach((rowNode, rowOffset) => {
+    if (rowNode.attrs.rowHeight != null)
+      tr.setNodeMarkup(tableStart + rowOffset, undefined, {
+        ...rowNode.attrs,
+        rowHeight: null,
+      })
+  })
+  if (tr.docChanged) editor.view.dispatch(tr)
+  return true
+}
+
 /** Posición del documento de la tabla (`table`) y de la fila (`tableRow`) que contienen ese elemento. */
 export function tableRowPositions(
   editor: Editor,
