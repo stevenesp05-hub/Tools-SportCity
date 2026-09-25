@@ -204,17 +204,31 @@ export function FolderBrowser({
     list: TemplateRow[]
   } | null>(null)
   const templatesRequested = useRef<string | null | undefined>(undefined)
+  const templatesRequestId = useRef(0)
   // Las plantillas se piden una sola vez por carpeta, al acercarse al botón o abrir el diálogo.
   function ensureTemplates() {
     if (!loadTemplates || templatesRequested.current === currentFolderId) return
     templatesRequested.current = currentFolderId
     const requestedFor = currentFolderId
+    const requestId = ++templatesRequestId.current
     loadTemplates()
-      .then((list) => setTemplateCache({ folderId: requestedFor, list }))
+      .then((list) => {
+        // Si mientras tanto se pidieron plantillas de otra carpeta, esta respuesta
+        // llegó tarde: aplicarla pisaría el caché de la carpeta actual con datos viejos.
+        if (templatesRequestId.current !== requestId) return
+        setTemplateCache({ folderId: requestedFor, list })
+      })
       .catch(() => {
-        templatesRequested.current = undefined
+        if (templatesRequested.current === requestedFor) {
+          templatesRequested.current = undefined
+          toast.error('No se pudieron cargar las plantillas. Inténtalo de nuevo.')
+        }
       })
   }
+  const templatesLoading =
+    !!loadTemplates &&
+    templatesRequested.current === currentFolderId &&
+    templateCache?.folderId !== currentFolderId
   const [moveTarget, setMoveTarget] = useState<
     { kind: 'documents'; ids: string[] } | { kind: 'folder'; id: string } | null
   >(null)
@@ -777,6 +791,7 @@ export function FolderBrowser({
                     ? templateCache.list
                     : []
                 }
+                templatesLoading={templatesLoading}
                 saving={saving}
                 folderName={currentFolder?.name ?? 'Documento'}
                 onCreate={handleCreateDocument}

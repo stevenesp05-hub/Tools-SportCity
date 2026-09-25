@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft, FilePlus2, Search } from 'lucide-react'
+import { ArrowLeft, FilePlus2, Loader2, Search } from 'lucide-react'
 import { DOC_THEMES, THEME_INFO, suggestTheme } from '#/lib/doc-themes'
 import type { DocTheme } from '#/lib/doc-themes'
 import {
@@ -156,6 +156,7 @@ export function NewDocumentDialog({
   open,
   onOpenChange,
   templates,
+  templatesLoading,
   saving,
   folderName,
   onCreate,
@@ -163,6 +164,7 @@ export function NewDocumentDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
   templates: TemplateOption[]
+  templatesLoading?: boolean
   saving: boolean
   folderName: string
   onCreate: (
@@ -414,7 +416,13 @@ export function NewDocumentDialog({
                     </div>
                   </section>
                 ))}
-                {!showBlank && groups.length === 0 && (
+                {templatesLoading && (
+                  <div className="mb-6 flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="size-3.5 animate-spin" />
+                    Cargando plantillas…
+                  </div>
+                )}
+                {!showBlank && !templatesLoading && groups.length === 0 && (
                   <p className="text-sm text-muted-foreground">
                     Ninguna plantilla coincide con «{query}».
                   </p>
