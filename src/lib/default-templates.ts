@@ -833,6 +833,114 @@ const REGLAMENTOS: TemplateDefinition[] = [
       firmas(['Árbitro', 'Capitán local', 'Capitán visitante']),
     ]),
   },
+  {
+    // Nació como plantilla suelta (sin código ni cuadro de control): aquí pasa al catálogo con el mismo
+    // nombre y carpeta, así que "Instalar plantillas base" la actualiza en su sitio sin duplicarla.
+    name: 'Ficha de reserva',
+    description:
+      'Datos del cliente y del evento, servicios de interés, presupuesto y forma de pago.',
+    space: 'Eventos',
+    blocks: formal('Ficha de reserva', 'SC-RES-001', 'Eventos', [
+      field('N.º de ficha'),
+      field('Fecha de solicitud', '____ / ____ / ________'),
+      callout(
+        'info',
+        'Gracias por elegir Sport City Club para celebrar. Complete esta ficha para que nuestro equipo confirme disponibilidad, prepare su cotización y deje todo listo para su evento.',
+      ),
+      h2('1. Datos del cliente'),
+      table(
+        ['Campo', 'Detalle'],
+        [
+          ['Nombre completo', ''],
+          ['Cédula', ''],
+          ['Empresa / Institución', ''],
+          ['Teléfono / WhatsApp', ''],
+          ['Correo electrónico', ''],
+          [
+            '¿Cómo nos conoció?',
+            '☐ Redes sociales ☐ Recomendación ☐ Socio del club ☐ Otro: ________',
+          ],
+        ],
+      ),
+      h2('2. Datos del evento'),
+      table(
+        ['Campo', 'Detalle'],
+        [
+          [
+            'Tipo de evento',
+            '☐ Cumpleaños infantil ☐ Cumpleaños adulto ☐ Corporativo ☐ Otro: ____________',
+          ],
+          ['Homenajeado(a)', ''],
+          ['Edad que cumple', ''],
+          ['Temática / colores', ''],
+          ['Sede', '☐ Centro ☐ Norte'],
+          ['Fecha del evento', '____ / ____ / ________'],
+          ['Fecha alterna', '____ / ____ / ________'],
+          ['Hora de inicio', ''],
+          ['Hora de finalización', ''],
+          ['Invitados niños', ''],
+          ['Invitados adultos', ''],
+        ],
+      ),
+      h2('3. Espacios y servicios de interés'),
+      table(
+        [
+          'Espacios y actividades',
+          'Alimentos y bebidas',
+          'Ambientación y extras',
+        ],
+        [
+          [
+            '☐ Alquiler de cancha',
+            '☐ Alimentos (menú)',
+            '☐ Decoración temática',
+          ],
+          ['☐ Área de Sport Bar', '☐ Bebidas', '☐ Piñata y sorpresas'],
+          ['☐ Animación / recreación', '☐ Pastel', '☐ Sonido / música'],
+          ['☐ Instructor deportivo', '', '☐ Fotografía'],
+          ['', '', '☐ Otro: ____________'],
+        ],
+      ),
+      table(
+        ['Campo', 'Detalle'],
+        [
+          ['Menú / preferencias', ''],
+          ['Restricciones alimentarias', ''],
+          [
+            'Proveedores externos',
+            '☐ No ☐ Sí — detallar: ______________________________',
+          ],
+        ],
+      ),
+      h2('4. Presupuesto y forma de pago'),
+      table(
+        ['Campo', 'Detalle'],
+        [
+          ['Presupuesto estimado', 'C$ / US$'],
+          ['Monto cotizado', 'C$ / US$'],
+          ['Anticipo (reserva)', 'C$ / US$'],
+          ['Saldo pendiente', 'C$ / US$'],
+          ['Fecha del anticipo', '____ / ____ / ________'],
+          ['Fecha límite del saldo', '____ / ____ / ________'],
+          [
+            'Forma de pago',
+            '☐ Efectivo ☐ Tarjeta ☐ Transferencia ☐ Otro: ________',
+          ],
+          ['Requiere factura', '☐ No ☐ Sí — N.º RUC: ________________________'],
+        ],
+      ),
+      h2('5. Observaciones'),
+      table(
+        ['Indicaciones especiales, solicitudes adicionales o comentarios'],
+        blank(3, 1),
+      ),
+      callout(
+        'warn',
+        'La fecha queda reservada únicamente al confirmarse el pago del anticipo. Al firmar, el cliente declara que la información proporcionada es correcta y acepta las condiciones del evento acordadas con Sport City Club.',
+      ),
+      firmas(['Cliente', 'Asesor(a) Sport City Club']),
+    ]),
+  },
 ]
 
 const ALCANCES: TemplateDefinition[] = [
