@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { generateJSON } from '@tiptap/html/server'
+import type { JSONContent } from '@tiptap/react'
 import mammoth from 'mammoth'
 import { authMiddleware } from '#/server/auth'
 import { insertDocumentWithContent } from '#/server/documents'
@@ -26,16 +27,52 @@ const IMAGE_TYPES: Record<string, string> = {
   'image/gif': 'gif',
 }
 
-const STYLE_MAP = [
+export const STYLE_MAP = [
+  // Encabezados: inglés, español (Word) y "Encabezado" (LibreOffice/plantillas traducidas).
+  // Del 3 en adelante todos bajan a h3 — es el nivel más profundo que soporta el editor.
   "p[style-name='Title'] => h2:fresh",
   "p[style-name='Título'] => h2:fresh",
   "p[style-name='Heading 1'] => h2:fresh",
   "p[style-name='Heading 2'] => h3:fresh",
   "p[style-name='Heading 3'] => h3:fresh",
+  "p[style-name='Heading 4'] => h3:fresh",
+  "p[style-name='Heading 5'] => h3:fresh",
+  "p[style-name='Heading 6'] => h3:fresh",
   "p[style-name='Título 1'] => h2:fresh",
   "p[style-name='Título 2'] => h3:fresh",
   "p[style-name='Título 3'] => h3:fresh",
+  "p[style-name='Título 4'] => h3:fresh",
+  "p[style-name='Encabezado 1'] => h2:fresh",
+  "p[style-name='Encabezado 2'] => h3:fresh",
+  "p[style-name='Encabezado 3'] => h3:fresh",
+  // Citas: el editor sí tiene cita (blockquote), así que no hace falta que caigan como párrafo suelto.
+  "p[style-name='Quote'] => blockquote:fresh",
+  "p[style-name='Intense Quote'] => blockquote:fresh",
+  "p[style-name='Cita'] => blockquote:fresh",
+  "p[style-name='Cita destacada'] => blockquote:fresh",
+  // Mammoth ignora el subrayado por defecto (se confunde con enlaces); el editor sí lo soporta.
+  'u => u',
 ]
+
+/** Firma de un .doc binario (97-2003): mammoth no puede leerlo aunque tenga la extensión .docx. */
+export function looksLikeLegacyDoc(buffer: Buffer): boolean {
+  return (
+    buffer.length >= 4 &&
+    buffer[0] === 0xd0 &&
+    buffer[1] === 0xcf &&
+    buffer[2] === 0x11 &&
+    buffer[3] === 0xe0
+  )
+}
+
+/** Un .docx es, por dentro, un .zip (firma "PK"). Si no lo es, no es un .docx válido. */
+export function looksLikeZip(buffer: Buffer): boolean {
+  return buffer.length >= 2 && buffer[0] === 0x50 && buffer[1] === 0x4b
+}
+
+const OLD_DOC_MESSAGE =
+  'es un Word antiguo (.doc), y este sistema solo lee el formato actual. Ábrelo en Word, usa ' +
+  'Archivo → Guardar como → Word (.docx) y vuelve a subirlo.'
 
 /** Las imágenes incrustadas (data URI) se suben al almacenamiento; las que no valen se descartan. */
 async function moveImagesToStorage(
@@ -84,6 +121,10 @@ export type ImportResult = {
   title: string
   images: number
   droppedImages: number
+  /** Avisos de Word al convertir (estilo sin reconocer, imagen sin encontrar…): no bloquean, pero pueden significar que algo no quedó igual. */
+  warnings: number
+  /** Si el documento con formato no se pudo montar y se guardó solo el texto, sin perder el contenido. */
+  textOnly: boolean
 }
 
 export const importDocument = createServerFn({ method: 'POST' })
@@ -113,18 +154,39 @@ export const importDocument = createServerFn({ method: 'POST' })
 
     let html: string
     let campaign = false
-    if (extension === 'docx') {
+    let warnings = 0
+    // Guardado solo si es un .docx válido: permite el respaldo a texto plano más abajo si el resto
+    // de la conversión no cuaja en el editor.
+    let docxBuffer: Buffer | null = null
+    if (extension === 'doc') {
+      throw new Error(`${file.name}: ${OLD_DOC_MESSAGE}`)
+    } else if (extension === 'docx') {
       const buffer = Buffer.from(await file.arrayBuffer())
-      const converted = await mammoth.convertToHtml(
-        { buffer },
-        {
-          styleMap: STYLE_MAP,
-          convertImage: mammoth.images.imgElement(async (image) => ({
-            src: `data:${image.contentType};base64,${await image.read('base64')}`,
-          })),
-        },
-      )
+      if (looksLikeLegacyDoc(buffer))
+        throw new Error(`${file.name}: ${OLD_DOC_MESSAGE}`)
+      if (!looksLikeZip(buffer))
+        throw new Error(
+          `${file.name}: no se pudo abrir. El archivo parece dañado o no es un .docx real.`,
+        )
+      docxBuffer = buffer
+      let converted: Awaited<ReturnType<typeof mammoth.convertToHtml>>
+      try {
+        converted = await mammoth.convertToHtml(
+          { buffer },
+          {
+            styleMap: STYLE_MAP,
+            convertImage: mammoth.images.imgElement(async (image) => ({
+              src: `data:${image.contentType};base64,${await image.read('base64')}`,
+            })),
+          },
+        )
+      } catch {
+        throw new Error(
+          `${file.name}: no se pudo leer. El archivo parece dañado o protegido con contraseña.`,
+        )
+      }
       html = converted.value
+      warnings = converted.messages.filter((m) => m.type === 'warning').length
     } else if (extension === 'html' || extension === 'htm') {
       const source = await file.text()
       try {
@@ -146,11 +208,26 @@ export const importDocument = createServerFn({ method: 'POST' })
     }
 
     const moved = await moveImagesToStorage(html, context.supabase)
-    const clean = sanitizeContentHtml(normalizeHeadings(moved.html))
-    if (!clean.replace(/<[^>]+>/g, '').trim() && !clean.includes('<img'))
-      throw new Error(`${file.name}: no se encontró contenido para importar.`)
+    let clean = sanitizeContentHtml(normalizeHeadings(moved.html))
+    let content: JSONContent
+    let textOnly = false
+    try {
+      if (!clean.replace(/<[^>]+>/g, '').trim() && !clean.includes('<img'))
+        throw new Error(`${file.name}: no se encontró contenido para importar.`)
+      content = generateJSON(clean, SCHEMA_EXTENSIONS)
+    } catch (err) {
+      // El formato de un Word no siempre encaja en el editor (tablas o estilos muy anidados). En vez
+      // de dejar a quien lo sube sin nada, se guarda el texto plano: se pierde el formato, no el
+      // contenido, y se avisa (`textOnly`) para que sepa que tiene que revisarlo.
+      if (!docxBuffer) throw err
+      const raw = (await mammoth.extractRawText({ buffer: docxBuffer })).value
+      if (!raw.trim())
+        throw new Error(`${file.name}: no se encontró contenido para importar.`)
+      clean = textToHtml(raw)
+      content = generateJSON(clean, SCHEMA_EXTENSIONS)
+      textOnly = true
+    }
 
-    const content = generateJSON(clean, SCHEMA_EXTENSIONS)
     const doc = await insertDocumentWithContent(
       context.supabase,
       context.user.id,
@@ -168,5 +245,7 @@ export const importDocument = createServerFn({ method: 'POST' })
       title,
       images: moved.kept,
       droppedImages: moved.dropped,
+      warnings,
+      textOnly,
     }
   })

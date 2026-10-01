@@ -10,8 +10,6 @@ import {
 } from 'react'
 import type { Editor, JSONContent } from '@tiptap/react'
 import {
-  Maximize2,
-  Minimize2,
   PanelRight,
   Pencil,
   Save,
@@ -37,6 +35,7 @@ import {
   listComments,
   recordView,
   toggleFavorite,
+  updateDocumentMeta,
 } from '#/server/library'
 import type { DocumentComment, DocumentLinkTarget } from '#/server/library'
 import { listReviews } from '#/server/reviews'
@@ -285,9 +284,6 @@ function DocumentPage() {
   const [panelOpen, setPanelOpen] = useState(false)
   const [checksOpen, setChecksOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
-  // Al abrir un documento, el modo principal es pantalla completa (antes "modo enfoque", opcional):
-  // sin barra de carpetas ni cabecera de la app, solo el documento y su propio menú.
-  const [focus, setFocus] = useState(true)
   const [continuous, setContinuous] = useState(false)
   const [showComments, setShowComments] = useState(true)
   const [outlineHost, setOutlineHost] = useState<HTMLDivElement | null>(null)
@@ -540,33 +536,6 @@ function DocumentPage() {
     setEditing(false)
   })
 
-  // Pantalla completa: se oculta la barra de carpetas y el buscador/avisos globales; la ruta
-  // (migas de pan) y el menú del documento (Archivo, Ver, Insertar…) se quedan.
-  useEffect(() => {
-    const root = globalThis.document.documentElement
-    if (focus) root.dataset.focus = '1'
-    else delete root.dataset.focus
-    return () => {
-      delete root.dataset.focus
-    }
-  }, [focus])
-  useEffect(() => {
-    function onKey(event: KeyboardEvent) {
-      if (
-        (event.metaKey || event.ctrlKey) &&
-        event.shiftKey &&
-        event.key.toLowerCase() === 'f'
-      ) {
-        event.preventDefault()
-        setFocus((value) => !value)
-      } else if (event.key === 'Escape' && focus) {
-        setFocus(false)
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [focus])
-
   // Ctrl/Cmd + P imprime el documento con su paginación real (el PDF), no la página de la aplicación.
   useEffect(() => {
     const printNow = () => void printDocument(docId)
@@ -604,7 +573,6 @@ function DocumentPage() {
   const openTemplate = useCallback(() => setTemplateDialogOpen(true), [])
   const openChecks = useCallback(() => setChecksOpen(true), [])
   const openPreview = useCallback(() => setPreviewOpen(true), [])
-  const toggleFocus = useCallback(() => setFocus((value) => !value), [])
   const toggleContinuous = useCallback(
     () => setContinuous((value) => !value),
     [],
@@ -643,6 +611,20 @@ function DocumentPage() {
       patchDocument({ is_favorite: !favorite })
       toast.error('No se pudo cambiar el favorito')
     })
+  })
+  const onApprove = useEvent(() => {
+    // Igual que el servidor: aprobar sella la fecha de aprobación.
+    patchDocument({ status: 'aprobado', approved_at: new Date().toISOString() })
+    updateDocumentMeta({ data: { id: docId, status: 'aprobado' } })
+      .then(() => invalidateDoc())
+      .catch((err: unknown) => {
+        patchDocument({ status: doc.status, approved_at: doc.approved_at })
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : 'No se pudo aprobar el documento',
+        )
+      })
   })
   const onReveal = useCallback((quote: string) => {
     if (editorRef.current) revealText(editorRef.current, quote)
@@ -702,29 +684,6 @@ function DocumentPage() {
           isFavorite={doc.is_favorite}
           onToggleFavorite={onToggleFavorite}
           editors={presence.editors}
-          focusToggle={
-            <Button
-              variant={focus ? 'outline' : 'ghost'}
-              size={focus ? 'sm' : 'icon'}
-              className={focus ? 'gap-1.5' : 'size-9 max-md:hidden'}
-              onClick={toggleFocus}
-              aria-label={
-                focus ? 'Salir de pantalla completa' : 'Pantalla completa'
-              }
-              title={
-                focus
-                  ? 'Salir de pantalla completa (Esc)'
-                  : 'Pantalla completa (Ctrl+Mayús+F)'
-              }
-            >
-              {focus ? (
-                <Minimize2 className="size-4" />
-              ) : (
-                <Maximize2 className="size-4" />
-              )}
-              {focus && <span className="max-sm:sr-only">Salir</span>}
-            </Button>
-          }
           saveStatus={
             <SaveStatus
               editing={editing}
@@ -802,6 +761,9 @@ function DocumentPage() {
               editing={editing}
               canEdit={canEdit}
               canDelete={canDelete}
+              canApprove={canApprove}
+              status={doc.status}
+              onApprove={onApprove}
               onEdit={startEditing}
               onSave={onSave}
               onCancel={onCancel}
@@ -812,8 +774,6 @@ function DocumentPage() {
               onChecks={openChecks}
               onDelete={onDelete}
               onTheme={onTheme}
-              focus={focus}
-              onFocus={toggleFocus}
               onPreview={openPreview}
               continuous={continuous}
               onContinuous={toggleContinuous}
@@ -1029,8 +989,7 @@ function DocumentPage() {
           </Suspense>
         )}
       </div>
-      {/* Visible en cualquier modo (también en pantalla completa): es «Ver → Detalles del
-          documento», no un panel que dependa de la barra de la app. */}
+      {/* Es «Ver → Detalles del documento», no un panel que dependa de la barra de la app. */}
       <DocumentSidebar
         canEdit={canEdit}
         mobileOpen={panelOpen}

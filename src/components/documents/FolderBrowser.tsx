@@ -221,7 +221,9 @@ export function FolderBrowser({
       .catch(() => {
         if (templatesRequested.current === requestedFor) {
           templatesRequested.current = undefined
-          toast.error('No se pudieron cargar las plantillas. Inténtalo de nuevo.')
+          toast.error(
+            'No se pudieron cargar las plantillas. Inténtalo de nuevo.',
+          )
         }
       })
   }
@@ -424,9 +426,7 @@ export function FolderBrowser({
         )}
         {canEdit && (
           <DropdownMenuItem
-            onSelect={() =>
-              setMoveTarget({ kind: 'documents', ids: [doc.id] })
-            }
+            onSelect={() => setMoveTarget({ kind: 'documents', ids: [doc.id] })}
           >
             <FolderInput className="size-4" />
             Mover a…
@@ -521,6 +521,8 @@ export function FolderBrowser({
     let ok = 0
     let images = 0
     let dropped = 0
+    let withWarnings = 0
+    let textOnly = 0
     for (const file of files) {
       try {
         const formData = new FormData()
@@ -531,6 +533,8 @@ export function FolderBrowser({
         ok += 1
         images += result.images
         dropped += result.droppedImages
+        if (result.textOnly) textOnly += 1
+        else if (result.warnings > 0) withWarnings += 1
       } catch (err) {
         toast.error(
           err instanceof Error
@@ -542,16 +546,20 @@ export function FolderBrowser({
     }
     setImporting(null)
     if (ok > 0) {
+      const notes = [
+        textOnly > 0 &&
+          (textOnly === 1
+            ? 'Un documento no conservó el formato: se guardó solo el texto, revísalo.'
+            : `${textOnly} documentos no conservaron el formato: se guardó solo el texto, revísalos.`),
+        withWarnings > 0 &&
+          'Alguno se convirtió con avisos: puede que algún estilo no quedara igual.',
+        dropped > 0 &&
+          `${dropped} imagen(es) no se pudieron importar (formato no admitido o de más de 5 MB).`,
+        textOnly === 0 && images > 0 && `${images} imagen(es) incluidas.`,
+      ].filter(Boolean)
       toast.success(
         ok === 1 ? 'Documento importado' : `${ok} documentos importados`,
-        {
-          description:
-            dropped > 0
-              ? `${dropped} imagen(es) no se pudieron importar (formato no admitido o de más de 5 MB).`
-              : images > 0
-                ? `${images} imagen(es) incluidas.`
-                : undefined,
-        },
+        { description: notes.length > 0 ? notes.join(' ') : undefined },
       )
       if (ok === 1 && files.length === 1 && lastId)
         await router.navigate({

@@ -8,6 +8,11 @@ import { NodeSelection, TextSelection } from '@tiptap/pm/state'
 import { DragHandle } from '@tiptap/extension-drag-handle-react'
 import { Link, useRouter } from '@tanstack/react-router'
 import { THEME_INFO, sheetThemeVars } from '#/lib/doc-themes'
+import {
+  PAGE_MARGIN_BOTTOM_IN,
+  PAGE_MARGIN_SIDE_IN,
+  PAGE_MARGIN_TOP_IN,
+} from '#/lib/page-geometry'
 import type { DocTheme } from '#/lib/doc-themes'
 import { SCHEMA_EXTENSIONS, countWords } from '#/lib/editor-extensions'
 import { cn } from '#/lib/utils'
@@ -35,6 +40,7 @@ import type {
   SlashState,
 } from '#/components/documents/editor-extras'
 import { imageFilesFrom, insertImageFiles } from '#/lib/image-upload'
+import { cleanPastedHtml } from '#/lib/paste-clean'
 import { TableGrips } from '#/components/documents/TableGrips'
 import { BlockPicker } from '#/components/documents/BlockPicker'
 import { SelectionBubble } from '#/components/documents/SelectionBubble'
@@ -169,6 +175,10 @@ export function DocumentEditor({
   const editor = useEditor({
     extensions,
     editorProps: {
+      // Limpia el HTML pegado desde fuera (Word, Docs, Excel, una web): nada de estilos en línea
+      // ni clases de origen, solo la estructura. El pegado interno (copiar/pegar dentro del mismo
+      // editor) no pasa por aquí — ProseMirror lo reconstruye directo desde su propio portapapeles.
+      transformPastedHTML: (html) => cleanPastedHtml(html),
       // Pegar o soltar imágenes las sube y las inserta; lo demás se comporta como siempre.
       handlePaste: (_view, event) => {
         const files = imageFilesFrom(event.clipboardData)
@@ -531,7 +541,7 @@ export function DocumentEditor({
                     'cursor-pointer hover:ring-2 hover:ring-primary/20',
             )}
             style={{
-              padding: '1.05in 0.85in 0.85in',
+              padding: `${PAGE_MARGIN_TOP_IN}in ${PAGE_MARGIN_SIDE_IN}in ${PAGE_MARGIN_BOTTOM_IN}in`,
               ...(sheetThemeVars(theme) as React.CSSProperties),
             }}
           >

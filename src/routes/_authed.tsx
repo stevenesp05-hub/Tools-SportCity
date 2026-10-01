@@ -121,8 +121,8 @@ function AuthedLayout() {
     if (narrow) setSidebarOpen(false)
   }, [pathname, narrow])
   useEffect(() => {
-    // Al abrir un documento se recoge sola, como al entrar en pantalla completa: se puede volver a
-    // mostrar con el mismo botón, pero por defecto el documento ocupa todo el ancho.
+    // Al abrir un documento se recoge sola para darle más ancho: se puede volver a mostrar con el
+    // mismo botón, solo empieza recogida.
     if (pathname.startsWith('/documentos/doc/')) setSidebarOpen(false)
   }, [pathname])
   function toggleSidebar() {
@@ -302,7 +302,6 @@ function AuthedLayout() {
             variant="ghost"
             size="icon"
             className="size-9 flex-none"
-            data-topbar-chrome
             onClick={toggleSidebar}
             aria-label={
               sidebarOpen
@@ -320,7 +319,6 @@ function AuthedLayout() {
           {crumbs.length > 0 && (
             <nav
               aria-label="Ruta"
-              data-topbar-chrome
               className="hidden min-w-0 flex-1 items-center gap-1 overflow-hidden text-sm text-muted-foreground md:flex"
             >
               <Link
@@ -355,10 +353,10 @@ function AuthedLayout() {
               ))}
             </nav>
           )}
-          <div className="shrink-0" data-topbar-chrome>
+          <div className="shrink-0">
             <GlobalSearch />
           </div>
-          <div className="ml-auto" data-topbar-chrome>
+          <div className="ml-auto">
             <NotificationsBell />
           </div>
         </header>

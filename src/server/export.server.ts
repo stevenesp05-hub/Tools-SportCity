@@ -1,5 +1,5 @@
 import { BRAND_IMAGES } from '#/lib/brand-assets'
-import { themeOf } from '#/lib/doc-themes'
+import { THEME_INFO, themeOf } from '#/lib/doc-themes'
 import { extractHeadings } from '#/lib/document-text'
 import { sanitizeContentHtml } from '#/lib/sanitize.server'
 import { expandDynamicBlocks } from '#/lib/dynamic-blocks'
@@ -146,24 +146,27 @@ const escapeAttr = (value: string) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
 
-/** Página HTML autocontenida (sin fuentes incrustadas) para archivar o abrir sin el sistema. */
+/** Página HTML autocontenida (sin fuentes incrustadas) para archivar o abrir sin el sistema.
+ *  Usa la paleta del tema real del documento (antes quedaba fija en los colores de "Corporativo"
+ *  sin importar qué tema tuviera el documento). */
 export function renderStandaloneHtml(input: DocumentPdfInput): string {
+  const c = THEME_INFO[themeOf(input.theme)].colors
   return `<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><title>${escapeAttr(input.title)}</title>
 <style>
-body{font-family:Inter,Arial,sans-serif;color:#1b1b3a;max-width:8.5in;margin:0 auto;padding:0.6in;line-height:1.55;font-size:14px}
-h1,h2,h3{color:#1e1a6b}.kicker{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#3f78b5;font-weight:700}
-.meta{color:#6a70a0;font-size:12px;margin-bottom:24px}
-table{border-collapse:collapse;width:100%;margin:12px 0}th{background:#1e1a6b;color:#fff;text-align:left}
-th,td{padding:6px 10px;border:1px solid #c9cde0;vertical-align:top}th p,td p{margin:0}
-img{max-width:100%}figure{margin:12px auto}figcaption{font-size:11px;font-style:italic;color:#6a70a0;text-align:center}
-div[data-callout]{border:1px solid #d9dcec;border-left:4px solid #9fc4ee;padding:8px 12px;margin:10px 0;border-radius:6px}
+body{font-family:Inter,Arial,sans-serif;color:${c.navy};max-width:8.5in;margin:0 auto;padding:0.6in;line-height:1.55;font-size:14px}
+h1,h2,h3{color:${c.navy}}.kicker{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:${c.navy};font-weight:700}
+.meta{color:${c.gray};font-size:12px;margin-bottom:24px}
+table{border-collapse:collapse;width:100%;margin:12px 0}th{background:${c.navy};color:${c.onNavy};text-align:left}
+th,td{padding:6px 10px;border:1px solid ${c.rule};vertical-align:top}th p,td p{margin:0}
+img{max-width:100%}figure{margin:12px auto}figcaption{font-size:11px;font-style:italic;color:${c.gray};text-align:center}
+div[data-callout]{border:1px solid ${c.rule};border-left:4px solid ${c.accent};padding:8px 12px;margin:10px 0;border-radius:6px}
 div[data-tone=warn]{border-left-color:#c2542b}div[data-tone=ok]{border-left-color:#2f9a5d}
 ul[data-type=taskList]{list-style:none;padding-left:0}ul[data-type=taskList] li{display:flex;gap:8px}
 ul[data-type=taskList] li::before{content:'☐'}ul[data-type=taskList] li[data-checked=true]::before{content:'☑'}
 div[data-page-break]{break-after:page}
-div[data-signatures]{display:flex;gap:40px;margin:16px 0;break-inside:avoid}div[data-signature]{flex:1;margin-top:48px;padding-top:5px;border-top:1.5px solid #1b1b3a;text-align:center}
-div[data-signature] p{margin:0;font-size:12px;color:#6a70a0}div[data-signature] p:first-child{color:#1b1b3a;font-weight:600}
+div[data-signatures]{display:flex;gap:40px;margin:16px 0;break-inside:avoid}div[data-signature]{flex:1;margin-top:48px;padding-top:5px;border-top:1.5px solid ${c.navy};text-align:center}
+div[data-signature] p{margin:0;font-size:12px;color:${c.gray}}div[data-signature] p:first-child{color:${c.navy};font-weight:600}
 </style></head><body>
 <div class="kicker">${escapeAttr(input.folderName)}</div>
 <h1>${escapeAttr(input.title)}</h1>

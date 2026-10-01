@@ -17,6 +17,17 @@ export type ServerDraft = {
 const isMissingSchema = (message: string) =>
   /does not exist|schema cache|could not find/i.test(message)
 
+/** Solo el mínimo que cualquier documento del editor cumple siempre (ver la misma comprobación en
+ *  src/server/documents.ts): que sea un doc de verdad, no cualquier payload. */
+function isDocJson(value: unknown): value is JSONContent {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as { type?: unknown }).type === 'doc' &&
+    Array.isArray((value as { content?: unknown }).content)
+  )
+}
+
 /** Borrador del usuario para un documento. Tolerante: sin la migración 0016 devuelve «sin borrador». (El tema viaja con `getDocument`.) */
 export const getDocumentExtras = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
@@ -51,7 +62,10 @@ export const saveDraft = createServerFn({ method: 'POST' })
       documentId: z.string().min(1),
       baseVersionId: z.string().min(1).nullable(),
       title: z.string().trim().min(1).max(300),
-      content: z.custom<JSONContent>(),
+      content: z.custom<JSONContent>(
+        isDocJson,
+        'El contenido del documento no tiene la forma esperada.',
+      ),
     }),
   )
   .handler(async ({ context, data }): Promise<DraftSaveResult> => {

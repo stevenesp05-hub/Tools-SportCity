@@ -7,6 +7,11 @@ import {
 } from '#/lib/pdf-template'
 import type { DocumentPdfInput } from '#/lib/pdf-template'
 import { THEME_INFO, themeOf } from '#/lib/doc-themes'
+import {
+  PAGE_MARGIN_BOTTOM_IN,
+  PAGE_MARGIN_SIDE_IN,
+  PAGE_MARGIN_TOP_IN,
+} from '#/lib/page-geometry'
 
 const IS_SERVERLESS = Boolean(
   process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME,
@@ -153,10 +158,10 @@ export async function renderDocumentPdf(
           : Promise.resolve(null),
         renderPagePdf(browser, renderContentHtml(input), {
           margin: {
-            top: '1.05in',
-            bottom: '0.85in',
-            left: '0.85in',
-            right: '0.85in',
+            top: `${PAGE_MARGIN_TOP_IN}in`,
+            bottom: `${PAGE_MARGIN_BOTTOM_IN}in`,
+            left: `${PAGE_MARGIN_SIDE_IN}in`,
+            right: `${PAGE_MARGIN_SIDE_IN}in`,
           },
         }),
       ])

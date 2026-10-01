@@ -5,6 +5,7 @@ import {
   AlignLeft,
   ArrowDown,
   ArrowUp,
+  BadgeCheck,
   BookmarkPlus,
   ClipboardCheck,
   Download,
@@ -56,6 +57,7 @@ import {
 } from '#/components/documents/editor-extras'
 import { DOC_THEMES, THEME_INFO } from '#/lib/doc-themes'
 import type { DocTheme } from '#/lib/doc-themes'
+import type { DocStatus } from '#/server/documents'
 import { downloadFile } from '#/lib/download'
 import { cn } from '#/lib/utils'
 
@@ -79,6 +81,9 @@ type Props = {
   editing: boolean
   canEdit: boolean
   canDelete: boolean
+  canApprove: boolean
+  status: DocStatus
+  onApprove: () => void
   onEdit: () => void
   onSave: () => void
   onCancel: () => void
@@ -89,8 +94,6 @@ type Props = {
   onChecks: () => void
   onDelete: () => void
   onTheme: (theme: DocTheme) => void
-  focus: boolean
-  onFocus: () => void
   onPreview: () => void
   continuous: boolean
   onContinuous: () => void
@@ -109,6 +112,11 @@ export const DocumentMenuBar = memo(function DocumentMenuBar(props: Props) {
     selector: ({ editor: e }) => ({
       inTable: e?.isActive('table') ?? false,
       hasCallout: e?.isActive('callout') ?? false,
+      bold: e?.isActive('bold') ?? false,
+      italic: e?.isActive('italic') ?? false,
+      underline: e?.isActive('underline') ?? false,
+      strike: e?.isActive('strike') ?? false,
+      highlight: e?.isActive('highlight') ?? false,
     }),
   })
   const inTable = state?.inTable ?? false
@@ -153,6 +161,16 @@ export const DocumentMenuBar = memo(function DocumentMenuBar(props: Props) {
           {props.canEdit && editing && (
             <MenubarItem onSelect={props.onCancel}>
               <X /> Cancelar la edición
+            </MenubarItem>
+          )}
+          {props.canApprove && (
+            <MenubarItem
+              disabled={
+                props.status === 'aprobado' || props.status === 'vigente'
+              }
+              onSelect={props.onApprove}
+            >
+              <BadgeCheck /> Aprobar documento
             </MenubarItem>
           )}
           <MenubarSeparator />
@@ -274,13 +292,6 @@ export const DocumentMenuBar = memo(function DocumentMenuBar(props: Props) {
             Modo edición
           </MenubarCheckboxItem>
           <MenubarCheckboxItem
-            checked={props.focus}
-            onCheckedChange={props.onFocus}
-          >
-            Pantalla completa
-            <MenubarShortcut>Ctrl+Mayús+F</MenubarShortcut>
-          </MenubarCheckboxItem>
-          <MenubarCheckboxItem
             checked={props.continuous}
             onCheckedChange={props.onContinuous}
           >
@@ -366,25 +377,36 @@ export const DocumentMenuBar = memo(function DocumentMenuBar(props: Props) {
           <MenubarSub>
             <MenubarSubTrigger disabled={off}>Texto</MenubarSubTrigger>
             <MenubarSubContent>
-              <MenubarItem onSelect={run((e) => chain(e).toggleBold().run())}>
+              <MenubarCheckboxItem
+                checked={state?.bold ?? false}
+                onSelect={run((e) => chain(e).toggleBold().run())}
+              >
                 Negrita <MenubarShortcut>Ctrl+B</MenubarShortcut>
-              </MenubarItem>
-              <MenubarItem onSelect={run((e) => chain(e).toggleItalic().run())}>
+              </MenubarCheckboxItem>
+              <MenubarCheckboxItem
+                checked={state?.italic ?? false}
+                onSelect={run((e) => chain(e).toggleItalic().run())}
+              >
                 Cursiva <MenubarShortcut>Ctrl+I</MenubarShortcut>
-              </MenubarItem>
-              <MenubarItem
+              </MenubarCheckboxItem>
+              <MenubarCheckboxItem
+                checked={state?.underline ?? false}
                 onSelect={run((e) => chain(e).toggleUnderline().run())}
               >
                 Subrayado <MenubarShortcut>Ctrl+U</MenubarShortcut>
-              </MenubarItem>
-              <MenubarItem onSelect={run((e) => chain(e).toggleStrike().run())}>
+              </MenubarCheckboxItem>
+              <MenubarCheckboxItem
+                checked={state?.strike ?? false}
+                onSelect={run((e) => chain(e).toggleStrike().run())}
+              >
                 Tachado
-              </MenubarItem>
-              <MenubarItem
+              </MenubarCheckboxItem>
+              <MenubarCheckboxItem
+                checked={state?.highlight ?? false}
                 onSelect={run((e) => chain(e).toggleHighlight().run())}
               >
                 <Highlighter /> Resaltar
-              </MenubarItem>
+              </MenubarCheckboxItem>
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub>

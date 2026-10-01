@@ -1026,7 +1026,6 @@ export function Toolbar({ editor }: { editor: Editor }) {
           </DropdownMenuContent>
         </DropdownMenu>
         <Separator orientation="vertical" className="mx-1 h-5" />
-        <Separator orientation="vertical" className="mx-1 h-5" />
         <IconButton
           icon={List}
           label="Lista"
@@ -1062,6 +1061,7 @@ export function Toolbar({ editor }: { editor: Editor }) {
           icon={ImageIcon}
           label="Insertar imagen"
           onClick={() => fileInputRef.current?.click()}
+          active={state.image}
         />
         <IconButton
           icon={LinkIcon}

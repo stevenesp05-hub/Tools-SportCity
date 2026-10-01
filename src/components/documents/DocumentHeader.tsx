@@ -6,7 +6,7 @@ import { cn } from '#/lib/utils'
  * Cabecera única del documento: identidad (título, favorito), menús y herramientas en una misma
  * barra, como una aplicación de escritorio. El título es lo primero que se ve, sin nada encima —
  * la carpeta y el estado se consultan desde «Ver → Detalles del documento», no están siempre a la
- * vista. Siempre a la vista, incluso a pantalla completa (ahí es la única barra que queda).
+ * vista.
  */
 export function DocumentHeader({
   title,
@@ -19,7 +19,6 @@ export function DocumentHeader({
   actions,
   menu,
   toolbar,
-  focusToggle,
 }: {
   title: string
   editing: boolean
@@ -32,7 +31,6 @@ export function DocumentHeader({
   actions: React.ReactNode
   menu: React.ReactNode
   toolbar: React.ReactNode
-  focusToggle?: React.ReactNode
 }) {
   return (
     <header className="mb-3 flex-none border-b border-border bg-card">
@@ -90,7 +88,6 @@ export function DocumentHeader({
           )}
           {saveStatus}
           {actions}
-          {focusToggle}
         </div>
       </div>
 

@@ -25,7 +25,6 @@
   --doc-desk: oklch(0.955 0.006 90);
   /* Sport City brand tokens */
   --sc-navy: oklch(0.24 0.14 275);
-  --sc-navy-2: oklch(0.18 0.1 275);
   --sc-ink: oklch(0.18 0.03 275);
   --sc-paper: oklch(0.985 0.004 90);
   --sc-line: oklch(0.24 0.14 275 / 0.14);
@@ -518,6 +517,7 @@ div[data-callout][data-tone='ok'] {
   border-left: 3px solid var(--sc-accent);
   background: #fff;
   border-radius: 0 8px 8px 0;
+  font-size: 11.5px;
 }
 .doc-sheet .ProseMirror .tableWrapper {
   /* Segundo tope, en el contenedor y no en la propia tabla: Safari a veces no aplica bien un
@@ -923,7 +923,7 @@ div[data-callout][data-tone='ok'] {
 /* Tablas con grosor y color de líneas elegidos por el usuario */
 .doc-sheet .ProseMirror [data-border] {
   --bw: 1px;
-  --bc: var(--t-rule, #9aa0b8);
+  --bc: var(--t-rule, var(--sc-line));
 }
 .doc-sheet .ProseMirror [data-border='1'] {
   --bw: 1px;
@@ -1063,12 +1063,12 @@ div[data-callout][data-tone='ok'] {
   right: 50%;
   width: 50%;
   height: 16px;
-  border-top: 1.5px solid var(--t-rule, #9aa0b8);
+  border-top: 1.5px solid var(--t-rule, var(--sc-line));
 }
 .doc-sheet .ProseMirror .sc-org li::after {
   right: auto;
   left: 50%;
-  border-left: 1.5px solid var(--t-rule, #9aa0b8);
+  border-left: 1.5px solid var(--t-rule, var(--sc-line));
 }
 .doc-sheet .ProseMirror .sc-org li:only-child::before,
 .doc-sheet .ProseMirror .sc-org li:only-child::after {
@@ -1085,7 +1085,7 @@ div[data-callout][data-tone='ok'] {
   border: 0 none;
 }
 .doc-sheet .ProseMirror .sc-org li:last-child::before {
-  border-right: 1.5px solid var(--t-rule, #9aa0b8);
+  border-right: 1.5px solid var(--t-rule, var(--sc-line));
   border-radius: 0 5px 0 0;
 }
 .doc-sheet .ProseMirror .sc-org li:first-child::after {
@@ -1097,7 +1097,7 @@ div[data-callout][data-tone='ok'] {
   top: 0;
   left: 50%;
   height: 16px;
-  border-left: 1.5px solid var(--t-rule, #9aa0b8);
+  border-left: 1.5px solid var(--t-rule, var(--sc-line));
 }
 .doc-sheet .ProseMirror .sc-org-node {
   display: inline-flex;
@@ -1317,7 +1317,7 @@ div[data-callout][data-tone='ok'] {
   fill: #fff;
 }
 .doc-sheet .ProseMirror .sc-chart .c-svg .grid {
-  stroke: var(--t-rule, #c3c8dc);
+  stroke: var(--t-rule, var(--sc-line));
   stroke-opacity: 0.55;
   stroke-width: 0.75;
 }
@@ -1613,14 +1613,6 @@ div[data-callout][data-tone='kpi'] > p:not(:first-child) {
   font-size: 10px !important;
   margin-top: 2px !important;
   color: var(--sc-navy) !important;
-}
-
-/* Pantalla completa (modo por defecto al abrir un documento): sin barra de carpetas ni buscador o
-   avisos globales, pero la ruta (migas de pan) se queda — es lo único de la barra de la app que
-   sigue haciendo falta con el documento a toda pantalla. */
-html[data-focus] [data-app-sidebar],
-html[data-focus] [data-app-topbar] [data-topbar-chrome] {
-  display: none !important;
 }
 
 /* Vista continua (Ver → Vista continua): el texto corre sin marcas de página */

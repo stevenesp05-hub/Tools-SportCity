@@ -2,12 +2,18 @@ import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { EditorView } from '@tiptap/pm/view'
+import {
+  PAGE_HEIGHT_IN,
+  PAGE_MARGIN_BOTTOM_IN,
+  PAGE_MARGIN_TOP_IN,
+} from '#/lib/page-geometry'
 
 const IN = 96
-/** Alto útil de una página: carta (11 in) menos márgenes superior (1.05 in) e inferior (0.85 in). */
-export const PAGE_CONTENT_PX = 9.1 * IN
-export const FOOT_PX = 0.85 * IN
-export const HEAD_PX = 1.05 * IN
+/** Alto útil de una página: carta (11 in) menos márgenes superior e inferior. */
+export const PAGE_CONTENT_PX =
+  (PAGE_HEIGHT_IN - PAGE_MARGIN_TOP_IN - PAGE_MARGIN_BOTTOM_IN) * IN
+export const FOOT_PX = PAGE_MARGIN_BOTTOM_IN * IN
+export const HEAD_PX = PAGE_MARGIN_TOP_IN * IN
 // Con poco hueco, la sombra que cae del pie de una hoja y la que sube hacia la cabecera de la
 // siguiente (cada una con ~18px de difuminado) se tocan y se funden en un degradado continuo — ya no
 // se ven como 2 hojas separadas con un hueco limpio entre ellas. Le pasa sobre todo a una página cuyo

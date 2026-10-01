@@ -21,6 +21,17 @@ import type { SupabaseServerClient } from '#/lib/supabase/server'
 
 const EMPTY_DOC: JSONContent = { type: 'doc', content: [{ type: 'paragraph' }] }
 
+/** Solo el mínimo que cualquier documento del editor cumple siempre: no valida cada nodo (eso
+ *  dependería del esquema de TipTap, que cambia), solo que es un doc de verdad y no cualquier cosa. */
+function isDocJson(value: unknown): value is JSONContent {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as { type?: unknown }).type === 'doc' &&
+    Array.isArray((value as { content?: unknown }).content)
+  )
+}
+
 export type FolderRow = {
   id: string
   name: string
@@ -776,7 +787,10 @@ export const saveDocumentVersion = createServerFn({ method: 'POST' })
     z.object({
       documentId: z.string().min(1),
       title: z.string().trim().min(1).max(300),
-      content: z.custom<JSONContent>(),
+      content: z.custom<JSONContent>(
+        isDocJson,
+        'El contenido del documento no tiene la forma esperada.',
+      ),
       contentHtml: z.string(),
       // Versión sobre la que se empezó a editar. Si ya no es la actual, alguien guardó antes.
       baseVersionId: z.string().min(1).nullable(),
