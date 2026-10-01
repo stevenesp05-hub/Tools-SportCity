@@ -1615,9 +1615,11 @@ div[data-callout][data-tone='kpi'] > p:not(:first-child) {
   color: var(--sc-navy) !important;
 }
 
-/* Modo enfoque: solo el documento y su barra mínima */
+/* Pantalla completa (modo por defecto al abrir un documento): sin barra de carpetas ni buscador o
+   avisos globales, pero la ruta (migas de pan) se queda — es lo único de la barra de la app que
+   sigue haciendo falta con el documento a toda pantalla. */
 html[data-focus] [data-app-sidebar],
-html[data-focus] [data-app-topbar] {
+html[data-focus] [data-app-topbar] [data-topbar-chrome] {
   display: none !important;
 }
 

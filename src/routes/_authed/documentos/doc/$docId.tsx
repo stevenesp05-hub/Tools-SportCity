@@ -18,6 +18,9 @@ import {
   Users,
   RefreshCw,
   FileClock,
+  History,
+  MessageSquare,
+  Share2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -282,7 +285,9 @@ function DocumentPage() {
   const [panelOpen, setPanelOpen] = useState(false)
   const [checksOpen, setChecksOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [focus, setFocus] = useState(false)
+  // Al abrir un documento, el modo principal es pantalla completa (antes "modo enfoque", opcional):
+  // sin barra de carpetas ni cabecera de la app, solo el documento y su propio menú.
+  const [focus, setFocus] = useState(true)
   const [continuous, setContinuous] = useState(false)
   const [showComments, setShowComments] = useState(true)
   const [outlineHost, setOutlineHost] = useState<HTMLDivElement | null>(null)
@@ -535,7 +540,8 @@ function DocumentPage() {
     setEditing(false)
   })
 
-  // Modo enfoque: la aplicación se oculta y queda el documento con su barra mínima.
+  // Pantalla completa: se oculta la barra de carpetas y el buscador/avisos globales; la ruta
+  // (migas de pan) y el menú del documento (Archivo, Ver, Insertar…) se quedan.
   useEffect(() => {
     const root = globalThis.document.documentElement
     if (focus) root.dataset.focus = '1'
@@ -686,43 +692,29 @@ function DocumentPage() {
     ),
     [doc, patchDocument, invalidateDoc, canEdit, canApprove, canManageAccess],
   )
-
   return (
     <div className="flex h-full w-full">
       <div className="flex min-w-0 flex-1 flex-col px-4 py-2">
         <DocumentHeader
-          folder={{
-            id: document.folder_id,
-            name: document.folder?.name ?? 'Documentos',
-          }}
           title={title}
           editing={editing}
           onTitleChange={onTitleChange}
-          status={doc.status}
           isFavorite={doc.is_favorite}
           onToggleFavorite={onToggleFavorite}
-          canEdit={canEdit}
-          theme={theme}
-          version={document.current_version?.version_number ?? null}
-          author={
-            versions[0]?.profiles?.full_name ??
-            versions[0]?.profiles?.email ??
-            null
-          }
-          updatedAt={doc.updated_at}
           editors={presence.editors}
-          focus={focus}
           focusToggle={
             <Button
               variant={focus ? 'outline' : 'ghost'}
               size={focus ? 'sm' : 'icon'}
               className={focus ? 'gap-1.5' : 'size-9 max-md:hidden'}
               onClick={toggleFocus}
-              aria-label={focus ? 'Salir del modo enfoque' : 'Modo enfoque'}
+              aria-label={
+                focus ? 'Salir de pantalla completa' : 'Pantalla completa'
+              }
               title={
                 focus
-                  ? 'Salir del modo enfoque (Esc)'
-                  : 'Modo enfoque (Ctrl+Mayús+F)'
+                  ? 'Salir de pantalla completa (Esc)'
+                  : 'Pantalla completa (Ctrl+Mayús+F)'
               }
             >
               {focus ? (
@@ -745,6 +737,37 @@ function DocumentPage() {
           }
           actions={
             <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-9 flex-none max-sm:hidden"
+                onClick={openHistory}
+                aria-label="Historial de versiones"
+                title="Historial de versiones"
+              >
+                <History className="size-4" />
+              </Button>
+              <Button
+                variant={showComments ? 'secondary' : 'ghost'}
+                size="icon"
+                className="size-9 flex-none max-sm:hidden"
+                onClick={toggleShowComments}
+                aria-label="Comentarios"
+                title="Comentarios"
+              >
+                <MessageSquare className="size-4" />
+              </Button>
+              {canEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="max-sm:hidden"
+                  onClick={openShare}
+                >
+                  <Share2 className="size-4" />
+                  Compartir
+                </Button>
+              )}
               {canEdit && editing && (
                 <Button size="sm" onClick={onSave} disabled={saving}>
                   <Save className="size-4" />
@@ -1006,29 +1029,17 @@ function DocumentPage() {
           </Suspense>
         )}
       </div>
-      {!focus && (
-        <DocumentSidebar
-          docId={docId}
-          getTitle={getTitle}
-          editing={editing}
-          canEdit={canEdit}
-          canDelete={canDelete}
-          onCancel={onCancel}
-          onHistory={openHistory}
-          onShare={openShare}
-          onReview={openReview}
-          onTemplate={openTemplate}
-          onChecks={openChecks}
-          onPreview={openPreview}
-          onDelete={onDelete}
-          mobileOpen={panelOpen}
-          onMobileOpenChange={setPanelOpen}
-          theme={theme}
-          onTheme={onTheme}
-          outlineHostRef={setOutlineHost}
-          details={details}
-        />
-      )}
+      {/* Visible en cualquier modo (también en pantalla completa): es «Ver → Detalles del
+          documento», no un panel que dependa de la barra de la app. */}
+      <DocumentSidebar
+        canEdit={canEdit}
+        mobileOpen={panelOpen}
+        onMobileOpenChange={setPanelOpen}
+        theme={theme}
+        onTheme={onTheme}
+        outlineHostRef={setOutlineHost}
+        details={details}
+      />
     </div>
   )
 }

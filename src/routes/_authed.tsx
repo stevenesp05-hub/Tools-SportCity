@@ -120,6 +120,11 @@ function AuthedLayout() {
   useEffect(() => {
     if (narrow) setSidebarOpen(false)
   }, [pathname, narrow])
+  useEffect(() => {
+    // Al abrir un documento se recoge sola, como al entrar en pantalla completa: se puede volver a
+    // mostrar con el mismo botón, pero por defecto el documento ocupa todo el ancho.
+    if (pathname.startsWith('/documentos/doc/')) setSidebarOpen(false)
+  }, [pathname])
   function toggleSidebar() {
     setSidebarOpen((open) => {
       // La preferencia guardada es la del escritorio; el cajón del móvil no la cambia.
@@ -297,6 +302,7 @@ function AuthedLayout() {
             variant="ghost"
             size="icon"
             className="size-9 flex-none"
+            data-topbar-chrome
             onClick={toggleSidebar}
             aria-label={
               sidebarOpen
@@ -314,6 +320,7 @@ function AuthedLayout() {
           {crumbs.length > 0 && (
             <nav
               aria-label="Ruta"
+              data-topbar-chrome
               className="hidden min-w-0 flex-1 items-center gap-1 overflow-hidden text-sm text-muted-foreground md:flex"
             >
               <Link
@@ -348,10 +355,10 @@ function AuthedLayout() {
               ))}
             </nav>
           )}
-          <div className="shrink-0">
+          <div className="shrink-0" data-topbar-chrome>
             <GlobalSearch />
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto" data-topbar-chrome>
             <NotificationsBell />
           </div>
         </header>

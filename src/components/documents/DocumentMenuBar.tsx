@@ -277,7 +277,7 @@ export const DocumentMenuBar = memo(function DocumentMenuBar(props: Props) {
             checked={props.focus}
             onCheckedChange={props.onFocus}
           >
-            Modo enfoque
+            Pantalla completa
             <MenubarShortcut>Ctrl+Mayús+F</MenubarShortcut>
           </MenubarCheckboxItem>
           <MenubarCheckboxItem
@@ -293,7 +293,7 @@ export const DocumentMenuBar = memo(function DocumentMenuBar(props: Props) {
             Comentarios
           </MenubarCheckboxItem>
           <MenubarItem onSelect={() => emit(MENU_EVENTS.panel)}>
-            <FileText /> Mostrar u ocultar el panel
+            <FileText /> Detalles del documento
           </MenubarItem>
           <MenubarSeparator />
           <MenubarItem
