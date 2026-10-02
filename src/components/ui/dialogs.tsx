@@ -30,6 +30,8 @@ type PromptOptions = {
   defaultValue?: string
   placeholder?: string
   confirmLabel?: string
+  /** Devuelve el motivo si el texto no vale: se muestra bajo el campo y no deja aceptar. */
+  validate?: (value: string) => string | null
 }
 
 type Pending =
@@ -72,6 +74,11 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
     [],
   )
   const api = useMemo(() => ({ confirm, prompt }), [confirm, prompt])
+
+  const promptError =
+    pending?.kind === 'prompt' && text.trim()
+      ? (pending.options.validate?.(text.trim()) ?? null)
+      : null
 
   function close(result: boolean | string | null) {
     if (!pending) return
@@ -130,11 +137,18 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
                   autoFocus
                   value={text}
                   placeholder={pending.options.placeholder}
+                  aria-invalid={promptError !== null}
                   onChange={(e) => setText(e.target.value)}
                   onKeyDown={(e) =>
-                    e.key === 'Enter' && text.trim() && close(text.trim())
+                    e.key === 'Enter' &&
+                    text.trim() &&
+                    !promptError &&
+                    close(text.trim())
                   }
                 />
+                {promptError && (
+                  <p className="text-xs text-destructive">{promptError}</p>
+                )}
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => close(null)}>
@@ -142,7 +156,7 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
                 </Button>
                 <Button
                   onClick={() => close(text.trim())}
-                  disabled={!text.trim()}
+                  disabled={!text.trim() || promptError !== null}
                 >
                   {pending.options.confirmLabel ?? 'Aceptar'}
                 </Button>

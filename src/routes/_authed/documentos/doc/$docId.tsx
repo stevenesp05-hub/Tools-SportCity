@@ -77,6 +77,7 @@ import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { ChoiceSelect } from '#/components/ui/choice-select'
 import { useDialogs } from '#/components/ui/dialogs'
+import { NAME_CASE_MESSAGE, nameCaseError } from '#/lib/name-rules'
 import {
   Dialog,
   DialogContent,
@@ -486,6 +487,11 @@ function DocumentPage() {
   const handleSave = useEvent(async (force: boolean = false): Promise<void> => {
     const editor = editorRef.current
     if (!editor || !title.trim()) return
+    // Solo si el título cambió: un documento anterior a la regla conserva el suyo.
+    if (title.trim() !== document.title && nameCaseError(title.trim())) {
+      toast.error(NAME_CASE_MESSAGE)
+      return
+    }
     setSaving(true)
     try {
       const result = await saveDocumentVersion({
@@ -512,8 +518,12 @@ function DocumentPage() {
       // El contenido ya está en pantalla: la recarga (versiones, avisos) va en segundo plano.
       void invalidateDoc()
       void reviews.reload()
-    } catch {
-      toast.error('No se pudo guardar el documento')
+    } catch (err) {
+      toast.error(
+        err instanceof Error && err.message === NAME_CASE_MESSAGE
+          ? NAME_CASE_MESSAGE
+          : 'No se pudo guardar el documento',
+      )
     } finally {
       setSaving(false)
     }
@@ -678,6 +688,7 @@ function DocumentPage() {
     <div className="flex h-full w-full">
       <div className="flex min-w-0 flex-1 flex-col px-4 py-2">
         <DocumentHeader
+          originalTitle={document.title}
           title={title}
           editing={editing}
           onTitleChange={onTitleChange}

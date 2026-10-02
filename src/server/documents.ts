@@ -4,6 +4,11 @@ import { z } from 'zod'
 import type { JSONContent } from '@tiptap/react'
 import { authMiddleware } from '#/server/auth'
 import { assertPermission, hasPermission, ROLES } from '#/lib/permissions'
+import {
+  assertNameCase,
+  hasShoutedWord,
+  NAME_CASE_MESSAGE,
+} from '#/lib/name-rules'
 import type { Role } from '#/lib/permissions'
 import { DOC_THEMES, themeOf } from '#/lib/doc-themes'
 import type { DocTheme } from '#/lib/doc-themes'
@@ -62,6 +67,7 @@ export const createFolder = createServerFn({ method: 'POST' })
   )
   .handler(async ({ context, data }) => {
     assertPermission(context.user.role, 'tools.documentos.crear')
+    assertNameCase(data.name)
     const canSetVisibility = hasPermission(
       context.user.role,
       'tools.admin.gestionar_acceso',
@@ -102,6 +108,7 @@ export const renameFolder = createServerFn({ method: 'POST' })
   )
   .handler(async ({ context, data }) => {
     assertPermission(context.user.role, 'tools.documentos.editar')
+    assertNameCase(data.name)
     const { error } = await context.supabase
       .from('folders')
       .update({ name: data.name })
@@ -287,6 +294,7 @@ export const createDocument = createServerFn({ method: 'POST' })
   )
   .handler(async ({ context, data }) => {
     assertPermission(context.user.role, 'tools.documentos.crear')
+    assertNameCase(data.title)
 
     let content: JSONContent = EMPTY_DOC
     let contentHtml = '<p></p>'
@@ -799,6 +807,17 @@ export const saveDocumentVersion = createServerFn({ method: 'POST' })
   )
   .handler(async ({ context, data }): Promise<SaveResult> => {
     assertPermission(context.user.role, 'tools.documentos.editar')
+    if (hasShoutedWord(data.title)) {
+      // Un documento anterior a la regla puede seguir guardándose con su título de siempre;
+      // lo que no se admite es poner o cambiar un título así.
+      const { data: row } = await context.supabase
+        .from('documents')
+        .select('title')
+        .eq('id', data.documentId)
+        .maybeSingle()
+      if ((row as { title?: string } | null)?.title !== data.title)
+        throw new Error(NAME_CASE_MESSAGE)
+    }
     if (!data.force) {
       // Solo el id: el documento completo se descarga únicamente si hay conflicto.
       const { data: head } = await context.supabase

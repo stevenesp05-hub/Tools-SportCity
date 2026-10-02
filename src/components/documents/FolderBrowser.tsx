@@ -28,6 +28,7 @@ import {
 import type { Role } from '#/lib/permissions'
 import { deleteDocuments, deleteFolder, renameFolder } from '#/server/documents'
 import { folderChainOf } from '#/lib/breadcrumbs'
+import { nameCaseError } from '#/lib/name-rules'
 import { importDocument } from '#/server/import'
 import { downloadFile } from '#/lib/download'
 import type { DocumentSummary, FolderRow } from '#/server/documents'
@@ -267,8 +268,10 @@ export function FolderBrowser({
     }
   }
 
+  const folderNameError = nameCaseError(folderName)
+
   async function handleCreateFolder() {
-    if (!folderName.trim()) return
+    if (!folderName.trim() || folderNameError) return
     setSaving(true)
     try {
       await onCreateFolder(folderName.trim(), allowedRoles)
@@ -310,6 +313,7 @@ export function FolderBrowser({
       label: 'Nombre',
       defaultValue: folder.name,
       confirmLabel: 'Renombrar',
+      validate: nameCaseError,
     })
     if (name && name !== folder.name) {
       await run(
@@ -350,6 +354,7 @@ export function FolderBrowser({
       label: 'Título',
       defaultValue: doc.title,
       confirmLabel: 'Renombrar',
+      validate: nameCaseError,
     })
     if (title && title !== doc.title) {
       await run(
@@ -704,8 +709,14 @@ export function FolderBrowser({
                     id="folder-name"
                     value={folderName}
                     onChange={(e) => setFolderName(e.target.value)}
+                    aria-invalid={folderNameError !== null}
                     onKeyDown={(e) => e.key === 'Enter' && handleCreateFolder()}
                   />
+                  {folderNameError && (
+                    <p className="text-xs text-destructive">
+                      {folderNameError}
+                    </p>
+                  )}
                 </div>
                 {canManageAccess && (
                   <div className="space-y-1.5">
@@ -736,7 +747,9 @@ export function FolderBrowser({
                 <DialogFooter>
                   <Button
                     onClick={handleCreateFolder}
-                    disabled={saving || !folderName.trim()}
+                    disabled={
+                      saving || !folderName.trim() || folderNameError !== null
+                    }
                   >
                     Crear
                   </Button>

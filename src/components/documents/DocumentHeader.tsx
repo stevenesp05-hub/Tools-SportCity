@@ -1,5 +1,6 @@
 import { Star } from 'lucide-react'
 import { initialsOf } from '#/lib/format'
+import { nameCaseError } from '#/lib/name-rules'
 import { cn } from '#/lib/utils'
 
 /**
@@ -9,6 +10,7 @@ import { cn } from '#/lib/utils'
  * vista.
  */
 export function DocumentHeader({
+  originalTitle,
   title,
   editing,
   onTitleChange,
@@ -20,6 +22,8 @@ export function DocumentHeader({
   menu,
   toolbar,
 }: {
+  /** Título guardado: un documento anterior a la regla de nombres puede conservar el suyo. */
+  originalTitle: string
   title: string
   editing: boolean
   onTitleChange: (title: string) => void
@@ -32,6 +36,8 @@ export function DocumentHeader({
   menu: React.ReactNode
   toolbar: React.ReactNode
 }) {
+  // Solo se avisa si el título se ha cambiado: el de siempre de un documento antiguo no molesta.
+  const titleError = title !== originalTitle ? nameCaseError(title) : null
   return (
     <header className="mb-3 flex-none border-b border-border bg-card">
       <div className="flex items-center gap-3 px-3 pt-2.5">
@@ -42,7 +48,11 @@ export function DocumentHeader({
                 value={title}
                 onChange={(event) => onTitleChange(event.target.value)}
                 aria-label="Título del documento"
-                className="h-8 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1.5 font-display text-lg font-semibold text-foreground outline-none hover:bg-secondary/60 focus:border-ring focus:bg-background"
+                aria-invalid={titleError !== null}
+                className={cn(
+                  'h-8 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1.5 font-display text-lg font-semibold text-foreground outline-none hover:bg-secondary/60 focus:border-ring focus:bg-background',
+                  titleError && 'border-destructive',
+                )}
               />
             ) : (
               <h1 className="min-w-0 truncate px-1.5 font-display text-lg font-semibold leading-8 text-foreground">
@@ -68,6 +78,9 @@ export function DocumentHeader({
               />
             </button>
           </div>
+          {editing && titleError && (
+            <p className="px-1.5 pb-1 text-xs text-destructive">{titleError}</p>
+          )}
         </div>
 
         <div className="flex flex-none items-center gap-2">

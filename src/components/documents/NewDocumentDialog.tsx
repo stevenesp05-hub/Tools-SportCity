@@ -25,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
+import { nameCaseError } from '#/lib/name-rules'
 import { cn } from '#/lib/utils'
 
 export type TemplateOption = {
@@ -179,6 +180,7 @@ export function NewDocumentDialog({
   const [filter, setFilter] = useState<Filter>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [title, setTitle] = useState('')
+  const titleError = nameCaseError(title)
   const [values, setValues] = useState<Record<string, string>>({})
   const [pickedTheme, setPickedTheme] = useState<DocTheme | null>(null)
   const titleRef = useRef<HTMLInputElement>(null)
@@ -462,11 +464,20 @@ export function NewDocumentDialog({
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
                     onKeyDown={(event) => {
-                      if (event.key === 'Enter' && title.trim() && !saving)
+                      if (
+                        event.key === 'Enter' &&
+                        title.trim() &&
+                        !titleError &&
+                        !saving
+                      )
                         onCreate(title.trim(), selectedId, values, theme)
                     }}
+                    aria-invalid={titleError !== null}
                     placeholder="Por ejemplo: Reglamento Liga 2026"
                   />
+                  {titleError && (
+                    <p className="text-xs text-destructive">{titleError}</p>
+                  )}
                 </div>
 
                 {variables.length > 0 && (
@@ -565,7 +576,7 @@ export function NewDocumentDialog({
                 onClick={() =>
                   onCreate(title.trim(), selectedId, values, theme)
                 }
-                disabled={saving || !title.trim()}
+                disabled={saving || !title.trim() || titleError !== null}
               >
                 {saving ? 'Creando…' : 'Crear documento'}
               </Button>

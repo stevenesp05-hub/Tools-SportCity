@@ -5,6 +5,7 @@ import mammoth from 'mammoth'
 import { authMiddleware } from '#/server/auth'
 import { insertDocumentWithContent } from '#/server/documents'
 import { assertPermission } from '#/lib/permissions'
+import { hasShoutedWord, toNameCase } from '#/lib/name-rules'
 import { mapLimit } from '#/lib/map-limit'
 import { SCHEMA_EXTENSIONS } from '#/lib/editor-extensions'
 import { sanitizeContentHtml } from '#/lib/sanitize.server'
@@ -146,11 +147,14 @@ export const importDocument = createServerFn({ method: 'POST' })
 
     const dot = file.name.lastIndexOf('.')
     const extension = dot >= 0 ? file.name.slice(dot + 1).toLowerCase() : ''
-    const title = (dot > 0 ? file.name.slice(0, dot) : file.name)
+    const rawTitle = (dot > 0 ? file.name.slice(0, dot) : file.name)
       .replace(/[_]+/g, ' ')
       .trim()
       .slice(0, 300)
+    const title = hasShoutedWord(rawTitle) ? toNameCase(rawTitle) : rawTitle
     if (!title) throw new Error('El archivo no tiene nombre.')
+    // El título sale del nombre del archivo, que no escribe quien importa: si viene en mayúsculas
+    // sostenidas («NORMATIVA LIGA») se pasa a la forma permitida en vez de rechazar el archivo.
 
     let html: string
     let campaign = false

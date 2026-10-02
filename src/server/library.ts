@@ -5,6 +5,7 @@ import { authMiddleware } from '#/server/auth'
 import { DOC_STATUSES } from '#/server/documents'
 import type { DocStatus } from '#/server/documents'
 import { assertPermission, ROLES } from '#/lib/permissions'
+import { assertNameCase } from '#/lib/name-rules'
 import { sanitizeContentHtml } from '#/lib/sanitize.server'
 import { expandDynamicBlocks } from '#/lib/dynamic-blocks'
 import { getSupabaseAdminClient } from '#/lib/supabase/admin.server'
@@ -40,6 +41,7 @@ export const renameDocument = createServerFn({ method: 'POST' })
   )
   .handler(async ({ context, data }) => {
     assertPermission(context.user.role, 'tools.documentos.editar')
+    assertNameCase(data.title)
     const { error } = await context.supabase
       .from('documents')
       .update({ title: data.title })
