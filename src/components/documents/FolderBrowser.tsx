@@ -600,7 +600,8 @@ export function FolderBrowser({
     >
       {dragging && (
         <div className="pointer-events-none fixed inset-4 z-40 flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-background/80 text-lg font-display text-primary backdrop-blur-sm">
-          Suelta los archivos para importarlos (.docx, .html, .md, .txt)
+          Suelta los archivos para importarlos (.docx, .doc, .xlsx, .csv, .html,
+          .md, .txt)
         </div>
       )}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -764,7 +765,7 @@ export function FolderBrowser({
                 ref={importInputRef}
                 type="file"
                 multiple
-                accept=".docx,.html,.htm,.md,.markdown,.txt"
+                accept=".docx,.doc,.xlsx,.csv,.tsv,.html,.htm,.md,.markdown,.txt"
                 className="hidden"
                 onChange={(event) => {
                   const files = [...(event.target.files ?? [])]

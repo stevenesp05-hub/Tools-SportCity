@@ -13,12 +13,20 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedBuscarRouteImport } from './routes/_authed/buscar'
+import { Route as AuthedGestionRouteImport } from './routes/_authed/gestion'
 import { Route as CompartidoTokenRouteImport } from './routes/compartido.$token'
 import { Route as AuthedAdministracionIndexRouteImport } from './routes/_authed/administracion/index'
 import { Route as AuthedAuditoriaIndexRouteImport } from './routes/_authed/auditoria/index'
 import { Route as AuthedDocumentosIndexRouteImport } from './routes/_authed/documentos/index'
 import { Route as AuthedDocumentosFolderIdRouteImport } from './routes/_authed/documentos/$folderId'
 import { Route as AuthedDocumentosPapeleraRouteImport } from './routes/_authed/documentos/papelera'
+import { Route as AuthedGestionIndexRouteImport } from './routes/_authed/gestion/index'
+import { Route as AuthedGestionEstrategiasRouteImport } from './routes/_authed/gestion/estrategias'
+import { Route as AuthedGestionKpiRouteImport } from './routes/_authed/gestion/kpi'
+import { Route as AuthedGestionOkrRouteImport } from './routes/_authed/gestion/okr'
+import { Route as AuthedGestionPlanRouteImport } from './routes/_authed/gestion/plan'
+import { Route as AuthedGestionPresupuestoRouteImport } from './routes/_authed/gestion/presupuesto'
+import { Route as AuthedGestionRoiRouteImport } from './routes/_authed/gestion/roi'
 import { Route as ApiImagenesSplatRouteImport } from './routes/api/imagenes/$'
 import { Route as AuthedDocumentosDocDocIdRouteImport } from './routes/_authed/documentos/doc/$docId'
 import { Route as ApiCarpetasFolderIdZipRouteImport } from './routes/api/carpetas/$folderId/zip'
@@ -44,6 +52,11 @@ const LoginRoute = LoginRouteImport.update({
 const AuthedBuscarRoute = AuthedBuscarRouteImport.update({
   id: '/buscar',
   path: '/buscar',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedGestionRoute = AuthedGestionRouteImport.update({
+  id: '/gestion',
+  path: '/gestion',
   getParentRoute: () => AuthedRoute,
 } as any)
 const CompartidoTokenRoute = CompartidoTokenRouteImport.update({
@@ -79,6 +92,43 @@ const AuthedDocumentosPapeleraRoute =
     path: '/documentos/papelera',
     getParentRoute: () => AuthedRoute,
   } as any)
+const AuthedGestionIndexRoute = AuthedGestionIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedGestionRoute,
+} as any)
+const AuthedGestionEstrategiasRoute =
+  AuthedGestionEstrategiasRouteImport.update({
+    id: '/estrategias',
+    path: '/estrategias',
+    getParentRoute: () => AuthedGestionRoute,
+  } as any)
+const AuthedGestionKpiRoute = AuthedGestionKpiRouteImport.update({
+  id: '/kpi',
+  path: '/kpi',
+  getParentRoute: () => AuthedGestionRoute,
+} as any)
+const AuthedGestionOkrRoute = AuthedGestionOkrRouteImport.update({
+  id: '/okr',
+  path: '/okr',
+  getParentRoute: () => AuthedGestionRoute,
+} as any)
+const AuthedGestionPlanRoute = AuthedGestionPlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => AuthedGestionRoute,
+} as any)
+const AuthedGestionPresupuestoRoute =
+  AuthedGestionPresupuestoRouteImport.update({
+    id: '/presupuesto',
+    path: '/presupuesto',
+    getParentRoute: () => AuthedGestionRoute,
+  } as any)
+const AuthedGestionRoiRoute = AuthedGestionRoiRouteImport.update({
+  id: '/roi',
+  path: '/roi',
+  getParentRoute: () => AuthedGestionRoute,
+} as any)
 const ApiImagenesSplatRoute = ApiImagenesSplatRouteImport.update({
   id: '/api/imagenes/$',
   path: '/api/imagenes/$',
@@ -121,13 +171,21 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/buscar': typeof AuthedBuscarRoute
+  '/gestion': typeof AuthedGestionRouteWithChildren
   '/compartido/$token': typeof CompartidoTokenRoute
   '/documentos/$folderId': typeof AuthedDocumentosFolderIdRoute
   '/documentos/papelera': typeof AuthedDocumentosPapeleraRoute
+  '/gestion/estrategias': typeof AuthedGestionEstrategiasRoute
+  '/gestion/kpi': typeof AuthedGestionKpiRoute
+  '/gestion/okr': typeof AuthedGestionOkrRoute
+  '/gestion/plan': typeof AuthedGestionPlanRoute
+  '/gestion/presupuesto': typeof AuthedGestionPresupuestoRoute
+  '/gestion/roi': typeof AuthedGestionRoiRoute
   '/api/imagenes/$': typeof ApiImagenesSplatRoute
   '/administracion/': typeof AuthedAdministracionIndexRoute
   '/auditoria/': typeof AuthedAuditoriaIndexRoute
   '/documentos/': typeof AuthedDocumentosIndexRoute
+  '/gestion/': typeof AuthedGestionIndexRoute
   '/documentos/doc/$docId': typeof AuthedDocumentosDocDocIdRoute
   '/api/carpetas/$folderId/zip': typeof ApiCarpetasFolderIdZipRoute
   '/api/compartido/$token/pdf': typeof ApiCompartidoTokenPdfRoute
@@ -142,10 +200,17 @@ export interface FileRoutesByTo {
   '/compartido/$token': typeof CompartidoTokenRoute
   '/documentos/$folderId': typeof AuthedDocumentosFolderIdRoute
   '/documentos/papelera': typeof AuthedDocumentosPapeleraRoute
+  '/gestion/estrategias': typeof AuthedGestionEstrategiasRoute
+  '/gestion/kpi': typeof AuthedGestionKpiRoute
+  '/gestion/okr': typeof AuthedGestionOkrRoute
+  '/gestion/plan': typeof AuthedGestionPlanRoute
+  '/gestion/presupuesto': typeof AuthedGestionPresupuestoRoute
+  '/gestion/roi': typeof AuthedGestionRoiRoute
   '/api/imagenes/$': typeof ApiImagenesSplatRoute
   '/administracion': typeof AuthedAdministracionIndexRoute
   '/auditoria': typeof AuthedAuditoriaIndexRoute
   '/documentos': typeof AuthedDocumentosIndexRoute
+  '/gestion': typeof AuthedGestionIndexRoute
   '/documentos/doc/$docId': typeof AuthedDocumentosDocDocIdRoute
   '/api/carpetas/$folderId/zip': typeof ApiCarpetasFolderIdZipRoute
   '/api/compartido/$token/pdf': typeof ApiCompartidoTokenPdfRoute
@@ -159,13 +224,21 @@ export interface FileRoutesById {
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authed/buscar': typeof AuthedBuscarRoute
+  '/_authed/gestion': typeof AuthedGestionRouteWithChildren
   '/compartido/$token': typeof CompartidoTokenRoute
   '/_authed/documentos/$folderId': typeof AuthedDocumentosFolderIdRoute
   '/_authed/documentos/papelera': typeof AuthedDocumentosPapeleraRoute
+  '/_authed/gestion/estrategias': typeof AuthedGestionEstrategiasRoute
+  '/_authed/gestion/kpi': typeof AuthedGestionKpiRoute
+  '/_authed/gestion/okr': typeof AuthedGestionOkrRoute
+  '/_authed/gestion/plan': typeof AuthedGestionPlanRoute
+  '/_authed/gestion/presupuesto': typeof AuthedGestionPresupuestoRoute
+  '/_authed/gestion/roi': typeof AuthedGestionRoiRoute
   '/api/imagenes/$': typeof ApiImagenesSplatRoute
   '/_authed/administracion/': typeof AuthedAdministracionIndexRoute
   '/_authed/auditoria/': typeof AuthedAuditoriaIndexRoute
   '/_authed/documentos/': typeof AuthedDocumentosIndexRoute
+  '/_authed/gestion/': typeof AuthedGestionIndexRoute
   '/_authed/documentos/doc/$docId': typeof AuthedDocumentosDocDocIdRoute
   '/api/carpetas/$folderId/zip': typeof ApiCarpetasFolderIdZipRoute
   '/api/compartido/$token/pdf': typeof ApiCompartidoTokenPdfRoute
@@ -179,13 +252,21 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/buscar'
+    | '/gestion'
     | '/compartido/$token'
     | '/documentos/$folderId'
     | '/documentos/papelera'
+    | '/gestion/estrategias'
+    | '/gestion/kpi'
+    | '/gestion/okr'
+    | '/gestion/plan'
+    | '/gestion/presupuesto'
+    | '/gestion/roi'
     | '/api/imagenes/$'
     | '/administracion/'
     | '/auditoria/'
     | '/documentos/'
+    | '/gestion/'
     | '/documentos/doc/$docId'
     | '/api/carpetas/$folderId/zip'
     | '/api/compartido/$token/pdf'
@@ -200,10 +281,17 @@ export interface FileRouteTypes {
     | '/compartido/$token'
     | '/documentos/$folderId'
     | '/documentos/papelera'
+    | '/gestion/estrategias'
+    | '/gestion/kpi'
+    | '/gestion/okr'
+    | '/gestion/plan'
+    | '/gestion/presupuesto'
+    | '/gestion/roi'
     | '/api/imagenes/$'
     | '/administracion'
     | '/auditoria'
     | '/documentos'
+    | '/gestion'
     | '/documentos/doc/$docId'
     | '/api/carpetas/$folderId/zip'
     | '/api/compartido/$token/pdf'
@@ -216,13 +304,21 @@ export interface FileRouteTypes {
     | '/_authed'
     | '/login'
     | '/_authed/buscar'
+    | '/_authed/gestion'
     | '/compartido/$token'
     | '/_authed/documentos/$folderId'
     | '/_authed/documentos/papelera'
+    | '/_authed/gestion/estrategias'
+    | '/_authed/gestion/kpi'
+    | '/_authed/gestion/okr'
+    | '/_authed/gestion/plan'
+    | '/_authed/gestion/presupuesto'
+    | '/_authed/gestion/roi'
     | '/api/imagenes/$'
     | '/_authed/administracion/'
     | '/_authed/auditoria/'
     | '/_authed/documentos/'
+    | '/_authed/gestion/'
     | '/_authed/documentos/doc/$docId'
     | '/api/carpetas/$folderId/zip'
     | '/api/compartido/$token/pdf'
@@ -274,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedBuscarRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/gestion': {
+      id: '/_authed/gestion'
+      path: '/gestion'
+      fullPath: '/gestion'
+      preLoaderRoute: typeof AuthedGestionRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/compartido/$token': {
       id: '/compartido/$token'
       path: '/compartido/$token'
@@ -315,6 +418,55 @@ declare module '@tanstack/react-router' {
       fullPath: '/documentos/papelera'
       preLoaderRoute: typeof AuthedDocumentosPapeleraRouteImport
       parentRoute: typeof AuthedRoute
+    }
+    '/_authed/gestion/': {
+      id: '/_authed/gestion/'
+      path: '/'
+      fullPath: '/gestion/'
+      preLoaderRoute: typeof AuthedGestionIndexRouteImport
+      parentRoute: typeof AuthedGestionRoute
+    }
+    '/_authed/gestion/estrategias': {
+      id: '/_authed/gestion/estrategias'
+      path: '/estrategias'
+      fullPath: '/gestion/estrategias'
+      preLoaderRoute: typeof AuthedGestionEstrategiasRouteImport
+      parentRoute: typeof AuthedGestionRoute
+    }
+    '/_authed/gestion/kpi': {
+      id: '/_authed/gestion/kpi'
+      path: '/kpi'
+      fullPath: '/gestion/kpi'
+      preLoaderRoute: typeof AuthedGestionKpiRouteImport
+      parentRoute: typeof AuthedGestionRoute
+    }
+    '/_authed/gestion/okr': {
+      id: '/_authed/gestion/okr'
+      path: '/okr'
+      fullPath: '/gestion/okr'
+      preLoaderRoute: typeof AuthedGestionOkrRouteImport
+      parentRoute: typeof AuthedGestionRoute
+    }
+    '/_authed/gestion/plan': {
+      id: '/_authed/gestion/plan'
+      path: '/plan'
+      fullPath: '/gestion/plan'
+      preLoaderRoute: typeof AuthedGestionPlanRouteImport
+      parentRoute: typeof AuthedGestionRoute
+    }
+    '/_authed/gestion/presupuesto': {
+      id: '/_authed/gestion/presupuesto'
+      path: '/presupuesto'
+      fullPath: '/gestion/presupuesto'
+      preLoaderRoute: typeof AuthedGestionPresupuestoRouteImport
+      parentRoute: typeof AuthedGestionRoute
+    }
+    '/_authed/gestion/roi': {
+      id: '/_authed/gestion/roi'
+      path: '/roi'
+      fullPath: '/gestion/roi'
+      preLoaderRoute: typeof AuthedGestionRoiRouteImport
+      parentRoute: typeof AuthedGestionRoute
     }
     '/api/imagenes/$': {
       id: '/api/imagenes/$'
@@ -368,8 +520,33 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthedGestionRouteChildren {
+  AuthedGestionEstrategiasRoute: typeof AuthedGestionEstrategiasRoute
+  AuthedGestionKpiRoute: typeof AuthedGestionKpiRoute
+  AuthedGestionOkrRoute: typeof AuthedGestionOkrRoute
+  AuthedGestionPlanRoute: typeof AuthedGestionPlanRoute
+  AuthedGestionPresupuestoRoute: typeof AuthedGestionPresupuestoRoute
+  AuthedGestionRoiRoute: typeof AuthedGestionRoiRoute
+  AuthedGestionIndexRoute: typeof AuthedGestionIndexRoute
+}
+
+const AuthedGestionRouteChildren: AuthedGestionRouteChildren = {
+  AuthedGestionEstrategiasRoute: AuthedGestionEstrategiasRoute,
+  AuthedGestionKpiRoute: AuthedGestionKpiRoute,
+  AuthedGestionOkrRoute: AuthedGestionOkrRoute,
+  AuthedGestionPlanRoute: AuthedGestionPlanRoute,
+  AuthedGestionPresupuestoRoute: AuthedGestionPresupuestoRoute,
+  AuthedGestionRoiRoute: AuthedGestionRoiRoute,
+  AuthedGestionIndexRoute: AuthedGestionIndexRoute,
+}
+
+const AuthedGestionRouteWithChildren = AuthedGestionRoute._addFileChildren(
+  AuthedGestionRouteChildren,
+)
+
 interface AuthedRouteChildren {
   AuthedBuscarRoute: typeof AuthedBuscarRoute
+  AuthedGestionRoute: typeof AuthedGestionRouteWithChildren
   AuthedDocumentosFolderIdRoute: typeof AuthedDocumentosFolderIdRoute
   AuthedDocumentosPapeleraRoute: typeof AuthedDocumentosPapeleraRoute
   AuthedAdministracionIndexRoute: typeof AuthedAdministracionIndexRoute
@@ -380,6 +557,7 @@ interface AuthedRouteChildren {
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedBuscarRoute: AuthedBuscarRoute,
+  AuthedGestionRoute: AuthedGestionRouteWithChildren,
   AuthedDocumentosFolderIdRoute: AuthedDocumentosFolderIdRoute,
   AuthedDocumentosPapeleraRoute: AuthedDocumentosPapeleraRoute,
   AuthedAdministracionIndexRoute: AuthedAdministracionIndexRoute,

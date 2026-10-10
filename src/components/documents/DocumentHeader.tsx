@@ -39,7 +39,7 @@ export function DocumentHeader({
   // Solo se avisa si el título se ha cambiado: el de siempre de un documento antiguo no molesta.
   const titleError = title !== originalTitle ? nameCaseError(title) : null
   return (
-    <header className="mb-3 flex-none border-b border-border bg-card">
+    <header className="glass mb-3 flex-none rounded-2xl">
       <div className="flex items-center gap-3 px-3 pt-2.5">
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-1">
@@ -62,7 +62,7 @@ export function DocumentHeader({
             <button
               type="button"
               onClick={onToggleFavorite}
-              className="flex-none rounded-md p-1.5 hover:bg-secondary"
+              className="flex-none rounded-lg p-1.5 transition-colors hover:bg-primary/[0.08]"
               aria-label={
                 isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'
               }
@@ -108,7 +108,9 @@ export function DocumentHeader({
         {menu}
       </div>
 
-      {toolbar && <div className="border-t border-border">{toolbar}</div>}
+      {toolbar && (
+        <div className="rounded-b-2xl border-t border-border/60">{toolbar}</div>
+      )}
     </header>
   )
 }

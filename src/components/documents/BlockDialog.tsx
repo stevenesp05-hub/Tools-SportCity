@@ -12,6 +12,7 @@ import {
 import { parseOrg } from '#/lib/diagrams'
 import type { OrgNode } from '#/lib/diagrams'
 import { ChartDialog } from '#/components/documents/ChartDialog'
+import { FlowDialog } from '#/components/documents/FlowDialog'
 import type { BlockDialogRequest } from '#/components/documents/editor-extras'
 
 const ORG_EXAMPLE = `Dirección | Gerente general
@@ -56,6 +57,9 @@ export function BlockDialog({
   }, [request])
 
   const org = useMemo(() => parseOrg(text), [text])
+
+  if (request?.type === 'flow')
+    return <FlowDialog request={request} onClose={onClose} onSave={onSave} />
 
   if (request?.type === 'chart')
     return <ChartDialog request={request} onClose={onClose} onSave={onSave} />

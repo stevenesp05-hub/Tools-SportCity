@@ -22,7 +22,7 @@ export function EmptyFolder({
       </h3>
       <p className="mt-1 max-w-sm text-sm text-muted-foreground">
         {canCreate
-          ? 'Crea un documento desde una plantilla o en blanco, o arrastra aquí un archivo Word, HTML, Markdown o de texto para importarlo.'
+          ? 'Crea un documento desde una plantilla o en blanco, o arrastra aquí un archivo Word, Excel, CSV, HTML, Markdown o de texto para importarlo.'
           : 'Todavía no hay documentos que puedas ver aquí.'}
       </p>
       {canCreate && (

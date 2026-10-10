@@ -17,3 +17,8 @@ function toReact(node: ChartNode | string, key?: number): ReactNode {
 export function ChartView({ spec }: { spec: ChartSpec }) {
   return <>{toReact(chartTree(spec))}</>
 }
+
+/** Dibuja un árbol ya calculado (por ejemplo, un diagrama de flujo). Va dentro de `.doc-sheet .ProseMirror`. */
+export function ChartTreeView({ tree }: { tree: ChartNode }) {
+  return <>{toReact(tree)}</>
+}

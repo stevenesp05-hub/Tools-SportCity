@@ -22,7 +22,7 @@
 }
 
 :root {
-  --doc-desk: oklch(0.955 0.006 90);
+  --doc-desk: oklch(0.962 0.006 250);
   /* Sport City brand tokens */
   --sc-navy: oklch(0.24 0.14 275);
   --sc-ink: oklch(0.18 0.03 275);
@@ -48,7 +48,8 @@
   --danger-soft: oklch(0.955 0.04 25);
   --danger-line: oklch(0.84 0.09 25);
 
-  --background: var(--sc-paper);
+  /* Fondo de la aplicación: blanco puro. «--sc-paper» (blanco hueso) queda para la hoja de los documentos. */
+  --background: oklch(1 0 0);
   --foreground: var(--sc-ink);
   --card: oklch(1 0 0);
   --card-foreground: var(--sc-ink);
@@ -173,6 +174,39 @@ body {
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fondo de la aplicación: blanco con dos resplandores muy suaves, para que el cristal de la barra
+   lateral y de la cabecera se note sin ensuciar el contenido. */
+.app-shell {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(46rem 30rem at 0% 0%, oklch(0.95 0.03 240 / 0.45), transparent 70%),
+    radial-gradient(40rem 28rem at 100% 100%, oklch(0.96 0.02 285 / 0.35), transparent 70%);
+  background-attachment: fixed;
+}
+
+.dark .app-shell {
+  background-image:
+    radial-gradient(46rem 30rem at 0% 0%, oklch(0.3 0.09 260 / 0.55), transparent 70%),
+    radial-gradient(40rem 28rem at 100% 100%, oklch(0.28 0.08 295 / 0.45), transparent 70%);
+}
+
+/* Cristal: superficie translúcida con desenfoque, borde de luz y sombra suave. */
+.glass {
+  background-color: color-mix(in oklch, var(--card) 72%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
+  border: 1px solid color-mix(in oklch, var(--card) 60%, var(--border));
+  box-shadow:
+    0 1px 0 0 oklch(1 0 0 / 0.6) inset,
+    0 10px 40px -12px oklch(0.24 0.14 275 / 0.22);
+}
+
+.dark .glass {
+  box-shadow:
+    0 1px 0 0 oklch(1 0 0 / 0.06) inset,
+    0 10px 40px -12px oklch(0 0 0 / 0.5);
 }
 
 h1,
@@ -1327,6 +1361,65 @@ div[data-callout][data-tone='ok'] {
 }
 .doc-sheet .ProseMirror .sc-chart .c-svg .bar {
   fill: var(--c);
+}
+
+/* Diagramas de flujo (src/lib/flow.ts): SVG ya dibujado, igual en el editor, el PDF y el Word */
+.doc-sheet .ProseMirror .sc-flow {
+  margin: 0.14in 0;
+  padding: 0.12in 0.16in;
+  background: #fff;
+  border: 1px solid var(--sc-line);
+  border-radius: 8px;
+  break-inside: avoid;
+}
+.doc-sheet .ProseMirror .sc-flow .c-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 7.5in;
+}
+.doc-sheet .ProseMirror .sc-flow .fl-step {
+  fill: var(--t-tint, oklch(0.96 0.01 275));
+  stroke: var(--t-navy, var(--sc-navy));
+  stroke-width: 1.2;
+}
+.doc-sheet .ProseMirror .sc-flow .fl-terminal {
+  fill: var(--t-navy, var(--sc-navy));
+}
+.doc-sheet .ProseMirror .sc-flow .fl-decision {
+  fill: oklch(0.965 0.045 85);
+  stroke: oklch(0.6 0.12 70);
+  stroke-width: 1.2;
+}
+.doc-sheet .ProseMirror .sc-flow .fl-edge {
+  fill: none;
+  stroke: var(--t-gray, #6a70a0);
+  stroke-width: 1.3;
+}
+.doc-sheet .ProseMirror .sc-flow .fl-arrow {
+  fill: var(--t-gray, #6a70a0);
+}
+.doc-sheet .ProseMirror .sc-flow .fl-text {
+  font-size: 10.5px;
+  font-weight: 600;
+  fill: var(--sc-ink);
+}
+.doc-sheet .ProseMirror .sc-flow .fl-text.fl-inv {
+  fill: #fff;
+}
+.doc-sheet .ProseMirror .sc-flow .fl-label {
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--t-gray, #6a70a0);
+}
+.doc-sheet .ProseMirror .sc-flow .ta-m {
+  text-anchor: middle;
+}
+.doc-sheet .ProseMirror .sc-flow .ta-e {
+  text-anchor: end;
+}
+.doc-sheet .ProseMirror .sc-flow .ta-s {
+  text-anchor: start;
 }
 .doc-sheet .ProseMirror .sc-chart .c-svg .slice {
   fill: var(--c);

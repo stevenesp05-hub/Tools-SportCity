@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { generateJSON } from '@tiptap/html/server'
 import type { JSONContent } from '@tiptap/react'
 import mammoth from 'mammoth'
+import WordExtractor from 'word-extractor'
 import { authMiddleware } from '#/server/auth'
 import { insertDocumentWithContent } from '#/server/documents'
 import { assertPermission } from '#/lib/permissions'
@@ -16,6 +17,12 @@ import {
   textToHtml,
 } from '#/lib/import-convert'
 import { convertStyledHtml } from '#/lib/import-html'
+import {
+  decodeCsvBytes,
+  docTextToHtml,
+  parseCsv,
+  sheetsToHtml,
+} from '#/lib/import-sheet'
 import { hasImageSignature } from '#/server/images.server'
 import type { SupabaseServerClient } from '#/lib/supabase/server'
 
@@ -72,8 +79,25 @@ export function looksLikeZip(buffer: Buffer): boolean {
 }
 
 const OLD_DOC_MESSAGE =
-  'es un Word antiguo (.doc), y este sistema solo lee el formato actual. Ábrelo en Word, usa ' +
-  'Archivo → Guardar como → Word (.docx) y vuelve a subirlo.'
+  'es un Word antiguo (.doc) y no se pudo leer. Ábrelo en Word, usa Archivo → Guardar como → ' +
+  'Word (.docx) y vuelve a subirlo.'
+
+/** Texto de un Word antiguo (.doc): se pierde el formato, no el contenido. */
+async function readLegacyDoc(
+  buffer: Buffer,
+  fileName: string,
+): Promise<string> {
+  let text: string
+  try {
+    text = (await new WordExtractor().extract(buffer)).getBody()
+  } catch {
+    throw new Error(`${fileName}: ${OLD_DOC_MESSAGE}`)
+  }
+  const html = docTextToHtml(text)
+  if (!html)
+    throw new Error(`${fileName}: no se encontró contenido para importar.`)
+  return html
+}
 
 /** Las imágenes incrustadas (data URI) se suben al almacenamiento; las que no valen se descartan. */
 async function moveImagesToStorage(
@@ -162,35 +186,80 @@ export const importDocument = createServerFn({ method: 'POST' })
     // Guardado solo si es un .docx válido: permite el respaldo a texto plano más abajo si el resto
     // de la conversión no cuaja en el editor.
     let docxBuffer: Buffer | null = null
+    // Verdadero cuando solo se conserva el texto (Word antiguo): se avisa para que se revise.
+    let textOnly = false
     if (extension === 'doc') {
-      throw new Error(`${file.name}: ${OLD_DOC_MESSAGE}`)
-    } else if (extension === 'docx') {
+      html = await readLegacyDoc(
+        Buffer.from(await file.arrayBuffer()),
+        file.name,
+      )
+      textOnly = true
+    } else if (extension === 'xls') {
+      throw new Error(
+        `${file.name}: es un Excel antiguo (.xls). Ábrelo en Excel, usa Archivo → Guardar como → Libro de Excel (.xlsx) o CSV y vuelve a subirlo.`,
+      )
+    } else if (extension === 'xlsx') {
       const buffer = Buffer.from(await file.arrayBuffer())
-      if (looksLikeLegacyDoc(buffer))
-        throw new Error(`${file.name}: ${OLD_DOC_MESSAGE}`)
       if (!looksLikeZip(buffer))
         throw new Error(
-          `${file.name}: no se pudo abrir. El archivo parece dañado o no es un .docx real.`,
+          `${file.name}: no se pudo abrir. El archivo parece dañado o no es un .xlsx real.`,
         )
-      docxBuffer = buffer
-      let converted: Awaited<ReturnType<typeof mammoth.convertToHtml>>
+      let sheets: Array<{ sheet: string; data: unknown[][] }>
       try {
-        converted = await mammoth.convertToHtml(
-          { buffer },
-          {
-            styleMap: STYLE_MAP,
-            convertImage: mammoth.images.imgElement(async (image) => ({
-              src: `data:${image.contentType};base64,${await image.read('base64')}`,
-            })),
-          },
-        )
+        const { default: readExcelFile } = await import('read-excel-file/node')
+        sheets = await readExcelFile(buffer)
       } catch {
         throw new Error(
           `${file.name}: no se pudo leer. El archivo parece dañado o protegido con contraseña.`,
         )
       }
-      html = converted.value
-      warnings = converted.messages.filter((m) => m.type === 'warning').length
+      const result = sheetsToHtml(
+        sheets.map((s) => ({ name: s.sheet, data: s.data })),
+      )
+      if (!result.html)
+        throw new Error(`${file.name}: no se encontró contenido para importar.`)
+      html = result.html
+      if (result.truncated) warnings += 1
+    } else if (extension === 'csv' || extension === 'tsv') {
+      const rows = parseCsv(
+        decodeCsvBytes(new Uint8Array(await file.arrayBuffer())),
+      )
+      const result = sheetsToHtml([{ name: title, data: rows }])
+      if (!result.html)
+        throw new Error(`${file.name}: no se encontró contenido para importar.`)
+      html = result.html
+      if (result.truncated) warnings += 1
+    } else if (extension === 'docx') {
+      const buffer = Buffer.from(await file.arrayBuffer())
+      if (looksLikeLegacyDoc(buffer)) {
+        // Un .doc antiguo con la extensión cambiada a mano a .docx: se lee como lo que es.
+        html = await readLegacyDoc(buffer, file.name)
+        textOnly = true
+      } else {
+        if (!looksLikeZip(buffer))
+          throw new Error(
+            `${file.name}: no se pudo abrir. El archivo parece dañado o no es un .docx real.`,
+          )
+        docxBuffer = buffer
+        let converted: Awaited<ReturnType<typeof mammoth.convertToHtml>>
+        try {
+          converted = await mammoth.convertToHtml(
+            { buffer },
+            {
+              styleMap: STYLE_MAP,
+              convertImage: mammoth.images.imgElement(async (image) => ({
+                src: `data:${image.contentType};base64,${await image.read('base64')}`,
+              })),
+            },
+          )
+        } catch {
+          throw new Error(
+            `${file.name}: no se pudo leer. El archivo parece dañado o protegido con contraseña.`,
+          )
+        }
+        html = converted.value
+        warnings = converted.messages.filter((m) => m.type === 'warning').length
+      }
     } else if (extension === 'html' || extension === 'htm') {
       const source = await file.text()
       try {
@@ -207,14 +276,13 @@ export const importDocument = createServerFn({ method: 'POST' })
       html = textToHtml(await file.text())
     } else {
       throw new Error(
-        `${file.name}: formato no admitido. Usa .docx, .html, .md o .txt.`,
+        `${file.name}: formato no admitido. Usa .docx, .doc, .xlsx, .csv, .html, .md o .txt.`,
       )
     }
 
     const moved = await moveImagesToStorage(html, context.supabase)
     let clean = sanitizeContentHtml(normalizeHeadings(moved.html))
     let content: JSONContent
-    let textOnly = false
     try {
       if (!clean.replace(/<[^>]+>/g, '').trim() && !clean.includes('<img'))
         throw new Error(`${file.name}: no se encontró contenido para importar.`)

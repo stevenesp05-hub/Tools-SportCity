@@ -399,7 +399,12 @@ export function DocumentEditor({
     const request = blockRequest
     setBlockRequest(null)
     if (!editor || !request) return
-    const type = request.type === 'org' ? 'orgChart' : 'chart'
+    const type =
+      request.type === 'org'
+        ? 'orgChart'
+        : request.type === 'flow'
+          ? 'flowChart'
+          : 'chart'
     if (request.pos !== null) {
       editor.view.dispatch(
         editor.state.tr.setNodeMarkup(request.pos, undefined, attrs),
@@ -507,7 +512,7 @@ export function DocumentEditor({
   )
 
   return (
-    <div className="flex min-h-[26rem] min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-[var(--doc-desk)]">
+    <div className="flex min-h-[26rem] min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border/70 bg-[var(--doc-desk)] shadow-sm">
       <div className="flex min-h-0 flex-1">
         <div ref={paneRef} className="min-w-0 flex-1 overflow-auto p-2 sm:p-4">
           <div
@@ -534,7 +539,7 @@ export function DocumentEditor({
               // Ahora, si no cabe, el panel que la contiene (ya tiene scroll propio) se desplaza en
               // horizontal, igual que una hoja real en cualquier editor de documentos. En vista
               // compacta (móvil) esto no aplica: esa regla fuerza su propio ancho con `!important`.
-              'doc-sheet relative mx-auto w-[8.5in] bg-[var(--sc-paper)] shadow-md',
+              'doc-sheet relative mx-auto w-[8.5in] bg-[var(--sc-paper)] shadow-[0_10px_36px_-14px_oklch(0.24_0.14_275/0.28)]',
               editable
                 ? 'cursor-text ring-2 ring-primary/25'
                 : onRequestEdit &&

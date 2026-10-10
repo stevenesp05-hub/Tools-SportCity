@@ -573,6 +573,19 @@ ${Array.from({ length: 59 }, (_, i) => `.body ol[start="${i + 2}"] { counter-res
 .body .sc-chart .c-svg .grid { stroke: var(--t-rule, #c3c8dc); stroke-opacity: 0.55; stroke-width: 0.75; }
 .body .sc-chart .c-svg .axis { stroke: var(--t-gray, #6a70a0); stroke-width: 1; }
 .body .sc-chart .c-svg .bar { fill: var(--c); }
+.body .sc-flow { margin: 0.14in 0; padding: 0.12in 0.16in; background: #fff; border: 1px solid rgba(30, 26, 107, 0.14); border-radius: 8px; break-inside: avoid; }
+.body .sc-flow .c-svg { display: block; width: 100%; height: auto; max-height: 7.5in; overflow: visible; }
+.body .sc-flow .fl-step { fill: var(--t-tint); stroke: var(--t-navy); stroke-width: 1.2; }
+.body .sc-flow .fl-terminal { fill: var(--t-navy); }
+.body .sc-flow .fl-decision { fill: #fdf3d8; stroke: #b8860b; stroke-width: 1.2; }
+.body .sc-flow .fl-edge { fill: none; stroke: var(--t-gray, #6a70a0); stroke-width: 1.3; }
+.body .sc-flow .fl-arrow { fill: var(--t-gray, #6a70a0); }
+.body .sc-flow .fl-text { font-size: 10.5px; font-weight: 600; fill: #1b1b3a; }
+.body .sc-flow .fl-text.fl-inv { fill: #fff; }
+.body .sc-flow .fl-label { font-size: 10px; font-weight: 700; fill: var(--t-gray, #6a70a0); }
+.body .sc-flow .ta-m { text-anchor: middle; }
+.body .sc-flow .ta-e { text-anchor: end; }
+.body .sc-flow .ta-s { text-anchor: start; }
 .body .sc-chart .c-svg .slice { fill: var(--c); stroke: #fff; stroke-width: 1.5; }
 .body .sc-chart .c-svg .line { fill: none; stroke: var(--c); stroke-width: 2.25; stroke-linejoin: round; stroke-linecap: round; }
 .body .sc-chart .c-svg .area { fill: var(--c); fill-opacity: 0.16; stroke: none; }

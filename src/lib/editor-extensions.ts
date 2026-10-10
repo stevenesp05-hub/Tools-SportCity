@@ -12,6 +12,7 @@ import {
   normalizeChartSpec,
 } from '#/lib/charts'
 import type { ChartNode, ChartSpec } from '#/lib/charts'
+import { FLOW_EXAMPLE, flowTree } from '#/lib/flow'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import StarterKit from '@tiptap/starter-kit'
 import { Table } from '@tiptap/extension-table'
@@ -645,6 +646,39 @@ export const Chart = Node.create({
   },
 })
 
+/**
+ * Diagrama de flujo escrito como texto (estilo Mermaid: `A --> B`). El texto es lo que se guarda y se
+ * edita; el dibujo SVG se calcula de él, así que sale igual en el editor y en el PDF.
+ */
+export const FlowChart = Node.create({
+  name: 'flowChart',
+  group: 'block',
+  atom: true,
+  selectable: true,
+  draggable: true,
+  addAttributes() {
+    return { text: { default: FLOW_EXAMPLE } }
+  },
+  parseHTML() {
+    return [
+      {
+        tag: 'div[data-flow]',
+        getAttrs: (element) => ({
+          text: decodeAttr<string>(element.getAttribute('data-flow'), FLOW_EXAMPLE),
+        }),
+      },
+    ]
+  },
+  renderHTML({ node }) {
+    const text = String(node.attrs.text ?? '')
+    return [
+      'div',
+      { class: 'sc-flow', 'data-flow': encodeAttr(text) },
+      chartElementSpec(flowTree(text)),
+    ]
+  },
+})
+
 /** Índice automático: en el editor se actualiza solo; al exportar se genera con los títulos. */
 export const TocBlock = Node.create({
   name: 'tocBlock',
@@ -760,5 +794,6 @@ export const SCHEMA_EXTENSIONS = [
   TaskItem.configure({ nested: true }),
   OrgChart,
   Chart,
+  FlowChart,
   TocBlock,
 ]

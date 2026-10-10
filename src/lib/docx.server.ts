@@ -9,6 +9,7 @@ import {
   normalizeChartSpec,
 } from '#/lib/charts'
 import type { ChartSpec } from '#/lib/charts'
+import { flowSteps } from '#/lib/flow'
 
 const escapeHtml = (value: string) =>
   value
@@ -146,6 +147,16 @@ export function prepareHtmlForDocx(html: string): string {
   out = replaceDivBlocks(out, /<div[^>]*data-org="([^"]*)"[^>]*>/, (tag) => {
     const encoded = /data-org="([^"]*)"/.exec(tag)?.[1] ?? null
     return orgToList(parseOrg(decodeAttr<string>(encoded, '')))
+  })
+  // Diagrama de flujo → sus pasos en orden (Word no dibuja el SVG).
+  out = replaceDivBlocks(out, /<div[^>]*data-flow="([^"]*)"[^>]*>/, (tag) => {
+    const encoded = /data-flow="([^"]*)"/.exec(tag)?.[1] ?? null
+    const steps = flowSteps(decodeAttr<string>(encoded, ''))
+    return steps.length === 0
+      ? ''
+      : `<p><strong>Diagrama de flujo</strong></p><ol>${steps
+          .map((step) => `<li><p>${escapeHtml(step)}</p></li>`)
+          .join('')}</ol>`
   })
 
   out = out.replace(

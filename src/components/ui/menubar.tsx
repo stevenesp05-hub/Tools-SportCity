@@ -25,7 +25,7 @@ function MenubarTrigger({
   return (
     <MenubarPrimitive.Trigger
       className={cn(
-        'flex h-7 cursor-default items-center rounded-md px-2.5 text-sm text-foreground outline-hidden select-none hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-secondary [@media(pointer:coarse)]:h-9',
+        'flex h-7 cursor-default items-center rounded-md px-2.5 text-sm text-foreground outline-hidden select-none transition-colors hover:bg-primary/[0.08] focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-primary/10 [@media(pointer:coarse)]:h-9',
         className,
       )}
       {...props}
@@ -34,7 +34,7 @@ function MenubarTrigger({
 }
 
 const contentClass =
-  'z-50 min-w-52 overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0'
+  'z-50 min-w-52 overflow-x-hidden overflow-y-auto rounded-xl border border-border/70 bg-popover/95 p-1.5 text-popover-foreground shadow-xl backdrop-blur-xl data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0'
 
 function MenubarContent({
   className,

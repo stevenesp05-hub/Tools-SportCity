@@ -12,7 +12,9 @@ import {
   ChevronRight,
   ClipboardList,
   Folder,
+  FolderOpen,
   Home,
+  Briefcase,
   Trash2,
   Users,
   LogOut,
@@ -29,6 +31,9 @@ import { Avatar, AvatarFallback } from '#/components/ui/avatar'
 import { GlobalSearch } from '#/components/layout/GlobalSearch'
 import { NotificationsBell } from '#/components/layout/NotificationsBell'
 import { cn } from '#/lib/utils'
+import { GESTION_SECTIONS, TINT_CLASSES } from '#/components/gestion/GestionNav'
+import type { Tint } from '#/components/gestion/GestionNav'
+import type { LucideIcon } from 'lucide-react'
 
 export const Route = createFileRoute('/_authed')({
   beforeLoad: ({ context, location }) => {
@@ -41,7 +46,37 @@ export const Route = createFileRoute('/_authed')({
 })
 
 const navLinkClass =
-  'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-foreground/80 hover:bg-secondary'
+  'group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-foreground/75 transition-all duration-200 hover:bg-primary/[0.07] hover:text-primary hover:translate-x-0.5'
+
+/** Enlace activo: fondo suave y una barra de color a la izquierda. */
+const navActive =
+  '[&.is-active]:bg-primary/10 [&.is-active]:font-semibold [&.is-active]:text-primary [&.is-active]:shadow-[inset_3px_0_0_0_var(--primary)]'
+
+const navActiveStatic =
+  'bg-primary/10 font-semibold text-primary shadow-[inset_3px_0_0_0_var(--primary)]'
+
+/** Icono dentro de una ficha de color; crece un poco al pasar el ratón. */
+function NavIcon({
+  icon: Icon,
+  tint,
+  small = false,
+}: {
+  icon: LucideIcon
+  tint: Tint
+  small?: boolean
+}) {
+  return (
+    <span
+      className={cn(
+        'flex flex-none items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-110',
+        small ? 'size-7' : 'size-8',
+        TINT_CLASSES[tint],
+      )}
+    >
+      <Icon className={small ? 'size-3.5' : 'size-4'} />
+    </span>
+  )
+}
 
 function AuthedLayout() {
   const { user } = Route.useRouteContext()
@@ -51,6 +86,36 @@ function AuthedLayout() {
   })
 
   const spaces = folders.filter((f) => f.parent_id === null)
+  const docsActive = pathname.startsWith('/documentos/')
+  // «Documentos» agrupa los espacios y la papelera; recuerda si el usuario lo dejó cerrado.
+  const [docsOpen, setDocsOpen] = useState(true)
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('sc:sidebar-documentos') === 'closed')
+        setDocsOpen(false)
+    } catch {
+      /* sin almacenamiento: se queda abierto */
+    }
+  }, [])
+  // Al entrar a una carpeta o documento, el grupo se abre para ver dónde estás.
+  useEffect(() => {
+    if (docsActive) setDocsOpen(true)
+  }, [docsActive])
+  const docsExpanded = docsOpen
+  const gestionActive = pathname.startsWith('/gestion')
+  const [gestionOpen, setGestionOpen] = useState(false)
+  useEffect(() => {
+    if (gestionActive) setGestionOpen(true)
+  }, [gestionActive])
+  const toggleDocs = () => {
+    const next = !docsExpanded
+    setDocsOpen(next)
+    try {
+      localStorage.setItem('sc:sidebar-documentos', next ? 'open' : 'closed')
+    } catch {
+      /* no pasa nada si no se puede guardar */
+    }
+  }
   const currentFolderId =
     pathname.startsWith('/documentos/') &&
     !pathname.startsWith('/documentos/doc/')
@@ -79,6 +144,14 @@ function AuthedLayout() {
       '/buscar': 'Buscar',
     }
     if (section[pathname]) return [{ label: section[pathname] }]
+    // Gestión: «Gestión > OKR», como el resto de rutas.
+    if (pathname === '/gestion') return [{ label: 'Gestión' }]
+    const gestion = GESTION_SECTIONS.find((g) => g.to === pathname)
+    if (gestion)
+      return [
+        { label: 'Gestión', to: '/gestion' as const },
+        { label: gestion.label },
+      ]
     if (pathname.startsWith('/documentos/doc/')) {
       if (!openDocument) return []
       return [
@@ -159,7 +232,7 @@ function AuthedLayout() {
   const initials = (user?.email ?? '?').slice(0, 2).toUpperCase()
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-background">
+    <div className="app-shell flex h-dvh overflow-hidden">
       {narrow && sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/40"
@@ -170,21 +243,21 @@ function AuthedLayout() {
       <aside
         data-app-sidebar
         className={cn(
-          'flex flex-none flex-col overflow-hidden border-r border-border bg-card',
+          'flex flex-none flex-col overflow-hidden',
           narrow
             ? cn(
-                'fixed inset-y-0 left-0 z-50 w-[min(18rem,86vw)] shadow-lg transition-transform duration-200',
+                'fixed inset-y-0 left-0 z-50 w-[min(19rem,92vw)] transition-transform duration-200',
                 sidebarOpen ? 'translate-x-0' : '-translate-x-full',
               )
             : cn(
                 'transition-[width] duration-200',
-                sidebarOpen ? 'w-72' : 'w-0 border-r-0',
+                sidebarOpen ? 'w-[19rem]' : 'w-0',
               ),
         )}
         inert={!sidebarOpen}
       >
-        <div className="flex h-full w-72 flex-none flex-col">
-          <div className="flex items-center gap-3 px-6 py-7">
+        <div className="glass m-3 flex h-[calc(100%-1.5rem)] w-[17.5rem] flex-none flex-col overflow-hidden rounded-2xl">
+          <div className="flex items-center gap-3 px-5 pb-4 pt-6">
             <img src="/brand/logo-mark.png" alt="" className="h-9 w-auto" />
             <span className="flex flex-col leading-none text-primary">
               <span className="font-display text-lg font-bold tracking-tight">
@@ -195,78 +268,146 @@ function AuthedLayout() {
               </span>
             </span>
           </div>
-          <div className="px-6 pb-3 text-2xs font-display uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="px-5 pb-2 text-2xs font-display uppercase tracking-[0.18em] text-muted-foreground">
             Tools
           </div>
-          <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4">
+          <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3">
             <Link
               to="/documentos"
               activeOptions={{ exact: true }}
-              className={cn(
-                navLinkClass,
-                '[&.is-active]:bg-secondary [&.is-active]:text-primary',
-              )}
+              className={cn(navLinkClass, navActive)}
               activeProps={{ className: 'is-active' }}
             >
-              <Home className="size-5" />
+              <NavIcon icon={Home} tint="indigo" />
               Inicio
             </Link>
-            {spaces.map((space) => (
-              <Link
-                key={space.id}
-                to="/documentos/$folderId"
-                params={{ folderId: space.id }}
-                className={cn(
-                  navLinkClass,
-                  activeSpaceId === space.id && 'bg-secondary text-primary',
+            {hasPermission(user?.role, 'tools.okr.ver') && (
+              <div>
+                <button
+                  type="button"
+                  aria-expanded={gestionOpen}
+                  aria-controls="sidebar-gestion"
+                  onClick={() => setGestionOpen((o) => !o)}
+                  className={cn(
+                    navLinkClass,
+                    'w-full text-left',
+                    gestionActive && !gestionOpen && navActiveStatic,
+                  )}
+                >
+                  <NavIcon icon={Briefcase} tint="violet" />
+                  <span className="flex-1">Gestión</span>
+                  <ChevronRight
+                    className={cn(
+                      'size-4 text-muted-foreground transition-transform duration-200',
+                      gestionOpen && 'rotate-90',
+                    )}
+                  />
+                </button>
+                {gestionOpen && (
+                  <div
+                    id="sidebar-gestion"
+                    className="mt-1 ml-[1.15rem] space-y-0.5 border-l border-border/70 pl-2"
+                  >
+                    {GESTION_SECTIONS.map((section) => (
+                      <Link
+                        key={section.to}
+                        to={section.to}
+                        activeOptions={{ exact: section.to === '/gestion' }}
+                        className={cn(navLinkClass, 'py-1.5', navActive)}
+                        activeProps={{ className: 'is-active' }}
+                      >
+                        <NavIcon
+                          icon={section.icon}
+                          tint={section.tint}
+                          small
+                        />
+                        {section.label}
+                      </Link>
+                    ))}
+                  </div>
                 )}
-              >
-                <Folder className="size-5" />
-                {space.name}
-              </Link>
-            ))}
-            {hasPermission(user?.role, 'tools.documentos.editar') && (
-              <Link
-                to="/documentos/papelera"
-                className={cn(
-                  navLinkClass,
-                  '[&.is-active]:bg-secondary [&.is-active]:text-primary',
-                )}
-                activeProps={{ className: 'is-active' }}
-              >
-                <Trash2 className="size-5" />
-                Papelera
-              </Link>
+              </div>
             )}
+            <div>
+              <button
+                type="button"
+                aria-expanded={docsExpanded}
+                aria-controls="sidebar-documentos"
+                onClick={toggleDocs}
+                className={cn(
+                  navLinkClass,
+                  'w-full text-left',
+                  docsActive && !docsExpanded && navActiveStatic,
+                )}
+              >
+                <NavIcon
+                  icon={docsExpanded ? FolderOpen : Folder}
+                  tint="blue"
+                />
+                <span className="flex-1">Documentos</span>
+                <ChevronRight
+                  className={cn(
+                    'size-4 text-muted-foreground transition-transform duration-200',
+                    docsExpanded && 'rotate-90',
+                  )}
+                />
+              </button>
+              {docsExpanded && (
+                <div
+                  id="sidebar-documentos"
+                  className="mt-1 ml-[1.15rem] space-y-0.5 border-l border-border/70 pl-2"
+                >
+                  {spaces.map((space) => (
+                    <Link
+                      key={space.id}
+                      to="/documentos/$folderId"
+                      params={{ folderId: space.id }}
+                      className={cn(
+                        navLinkClass,
+                        'py-1.5',
+                        activeSpaceId === space.id && navActiveStatic,
+                      )}
+                    >
+                      <NavIcon icon={Folder} tint="blue" small />
+                      <span className="truncate">{space.name}</span>
+                    </Link>
+                  ))}
+                  {hasPermission(user?.role, 'tools.documentos.editar') && (
+                    <Link
+                      to="/documentos/papelera"
+                      className={cn(navLinkClass, 'py-1.5', navActive)}
+                      activeProps={{ className: 'is-active' }}
+                    >
+                      <NavIcon icon={Trash2} tint="slate" small />
+                      Papelera
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
             {hasPermission(user?.role, 'tools.admin.ver_auditoria') && (
               <Link
                 to="/auditoria"
-                className={cn(
-                  'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-foreground/80 hover:bg-secondary',
-                  '[&.is-active]:bg-secondary [&.is-active]:text-primary',
-                )}
+                className={cn(navLinkClass, navActive)}
                 activeProps={{ className: 'is-active' }}
               >
-                <ClipboardList className="size-5" />
+                <NavIcon icon={ClipboardList} tint="amber" />
                 Auditoría
               </Link>
             )}
             {hasPermission(user?.role, 'tools.admin.gestionar_usuarios') && (
               <Link
                 to="/administracion"
-                className={cn(
-                  'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-foreground/80 hover:bg-secondary',
-                  '[&.is-active]:bg-secondary [&.is-active]:text-primary',
-                )}
+                className={cn(navLinkClass, navActive)}
                 activeProps={{ className: 'is-active' }}
               >
-                <Users className="size-5" />
+                <NavIcon icon={Users} tint="slate" />
                 Administración
               </Link>
             )}
           </nav>
-          <div className="border-t border-border p-4">
-            <div className="flex items-center gap-3 rounded-xl px-2 py-2.5">
+          <div className="border-t border-border/60 p-3">
+            <div className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-primary/[0.06]">
               <Avatar className="size-10">
                 <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                   {initials}
@@ -296,7 +437,7 @@ function AuthedLayout() {
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <header
           data-app-topbar
-          className="flex flex-none items-center gap-3 border-b border-border bg-card px-4 py-3.5 sm:px-6"
+          className="glass mx-3 mt-3 flex flex-none items-center gap-3 rounded-2xl px-3 py-2.5 sm:px-4"
         >
           <Button
             variant="ghost"
@@ -337,6 +478,13 @@ function AuthedLayout() {
                     <Link
                       to="/documentos/$folderId"
                       params={{ folderId: crumb.folderId }}
+                      className="truncate rounded-md px-1.5 py-0.5 font-medium hover:bg-secondary hover:text-foreground"
+                    >
+                      {crumb.label}
+                    </Link>
+                  ) : 'to' in crumb && crumb.to ? (
+                    <Link
+                      to={crumb.to}
                       className="truncate rounded-md px-1.5 py-0.5 font-medium hover:bg-secondary hover:text-foreground"
                     >
                       {crumb.label}

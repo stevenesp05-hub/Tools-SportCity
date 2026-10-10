@@ -127,7 +127,7 @@ function IconButton({
       type="button"
       variant="ghost"
       size="icon"
-      className={cn('size-8', active && 'bg-secondary text-primary')}
+      className={cn('size-8', active && 'bg-primary/10 text-primary')}
       onClick={onClick}
       title={label}
       aria-label={label}
@@ -161,7 +161,7 @@ function Swatches({
           type="button"
           variant="ghost"
           size="icon"
-          className={cn('size-8', active && 'bg-secondary text-primary')}
+          className={cn('size-8', active && 'bg-primary/10 text-primary')}
           title={label}
           aria-label={label}
         >
@@ -224,7 +224,7 @@ function FindBar({ editor, onClose }: { editor: Editor; onClose: () => void }) {
   }, [editor])
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-t border-border bg-secondary/40 px-3 py-1.5">
+    <div className="flex flex-wrap items-center gap-2 border-t border-border/60 bg-primary/[0.03] px-3 py-1.5">
       <Input
         ref={inputRef}
         value={query}
@@ -426,7 +426,7 @@ function TableBar({ editor }: { editor: Editor }) {
   }
 
   return (
-    <div className="sc-toolbar-row flex flex-wrap items-center gap-2 border-t border-border bg-secondary/40 px-3 py-2">
+    <div className="sc-toolbar-row flex flex-wrap items-center gap-2 border-t border-border/60 bg-primary/[0.03] px-3 py-2">
       <span className="flex items-center gap-1.5 pr-1 text-2xs font-display uppercase tracking-wide text-muted-foreground">
         <TableIcon className="size-3.5" />
         Tabla
@@ -1080,7 +1080,7 @@ export function Toolbar({ editor }: { editor: Editor }) {
       )}
 
       {state.image && state.imageAttrs && (
-        <div className="sc-toolbar-row flex flex-wrap items-center gap-1 border-t border-border bg-secondary/40 px-3 py-1.5">
+        <div className="sc-toolbar-row flex flex-wrap items-center gap-1 border-t border-border/60 bg-primary/[0.03] px-3 py-1.5">
           <span className="mr-1 text-2xs font-display uppercase tracking-wide text-muted-foreground">
             Imagen
           </span>

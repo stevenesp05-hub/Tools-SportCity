@@ -30,7 +30,7 @@ export function SlashMenuView({ slash }: { slash: SlashState | null }) {
       role="listbox"
       aria-label="Insertar bloque"
       style={style}
-      className="fixed z-50 flex max-h-[23.5rem] flex-col overflow-hidden rounded-xl border border-border bg-popover shadow-lg"
+      className="fixed z-50 flex max-h-[23.5rem] flex-col overflow-hidden glass rounded-2xl"
     >
       <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
         {items.length === 0 ? (
@@ -59,8 +59,8 @@ export function SlashMenuView({ slash }: { slash: SlashState | null }) {
                     slash.choose(item)
                   }}
                   className={cn(
-                    'flex h-9 w-full items-center gap-2.5 rounded-md px-2 text-left transition-colors',
-                    active ? 'bg-secondary' : 'hover:bg-secondary/60',
+                    'flex h-9 w-full items-center gap-2.5 rounded-lg px-2 text-left transition-colors',
+                    active ? 'bg-primary/10' : 'hover:bg-primary/[0.06]',
                   )}
                 >
                   <span
@@ -90,7 +90,7 @@ export function SlashMenuView({ slash }: { slash: SlashState | null }) {
           })
         )}
       </div>
-      <div className="flex flex-none items-center gap-3 border-t border-border bg-card/60 px-3 py-1.5 text-2xs text-muted-foreground">
+      <div className="flex flex-none items-center gap-3 border-t border-border/60 px-3 py-1.5 text-2xs text-muted-foreground">
         <span>
           <kbd className="font-mono">↑↓</kbd> moverte
         </span>

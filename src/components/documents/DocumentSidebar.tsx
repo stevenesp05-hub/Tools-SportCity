@@ -81,13 +81,13 @@ export const DocumentSidebar = memo(function DocumentSidebar(props: Props) {
     <aside
       aria-label="Detalles del documento"
       className={cn(
-        'flex flex-none flex-col border-l border-border bg-card',
+        'glass flex flex-none flex-col overflow-hidden rounded-2xl',
         isMobile
-          ? 'fixed inset-y-0 right-0 z-50 w-[min(20rem,92vw)] shadow-lg'
-          : 'w-72',
+          ? 'fixed inset-y-2 right-2 z-50 w-[min(20rem,92vw)]'
+          : 'my-2 mr-3 w-72',
       )}
     >
-      <div className="flex h-11 flex-none items-center justify-between border-b border-border px-4">
+      <div className="flex h-11 flex-none items-center justify-between border-b border-border/60 px-4">
         <span className="font-display text-xs uppercase tracking-wide text-muted-foreground">
           Detalles
         </span>
@@ -108,7 +108,7 @@ export const DocumentSidebar = memo(function DocumentSidebar(props: Props) {
       <div className="min-h-0 flex-1 overflow-y-auto">
         <section className="p-4">{props.details}</section>
 
-        <section className="border-t border-border p-4">
+        <section className="border-t border-border/60 p-4">
           <div className="mb-1.5 font-display text-2xs uppercase tracking-wide text-muted-foreground">
             Tema del documento
           </div>
@@ -142,7 +142,7 @@ export const DocumentSidebar = memo(function DocumentSidebar(props: Props) {
           </div>
         </section>
 
-        <section className="border-t border-border p-4">
+        <section className="border-t border-border/60 p-4">
           <div ref={props.outlineHostRef} />
         </section>
       </div>

@@ -68,6 +68,15 @@ const CHART_SHAPE_CLASSES = [
   'dot',
   'slice',
   'c-svg',
+  // Diagramas de flujo (src/lib/flow.ts)
+  'fl-step',
+  'fl-terminal',
+  'fl-decision',
+  'fl-edge',
+  'fl-arrow',
+  'fl-text',
+  'fl-inv',
+  'fl-label',
   ...Array.from({ length: 8 }, (_, i) => `s${i}`),
 ]
 
@@ -96,6 +105,7 @@ export function sanitizeContentHtml(html: string): string {
           'data-signature',
           'data-toc',
           'data-org',
+          'data-flow',
           'data-chart',
           'data-chart-items',
           'data-chart-spec',
@@ -139,6 +149,7 @@ export function sanitizeContentHtml(html: string): string {
         figure: ['sc-figure'],
         div: [
           'sc-org',
+          'sc-flow',
           'sc-chart',
           'c-row',
           'c-track',

@@ -157,7 +157,7 @@ export const DocumentMetaBar = memo(function DocumentMetaBar({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className="flex flex-none items-center gap-2 rounded-md px-1.5 py-1 text-sm hover:bg-secondary"
+          className="flex flex-none items-center gap-2 rounded-lg px-1.5 py-1 text-sm transition-colors hover:bg-primary/[0.08]"
           onClick={() =>
             run(
               () =>

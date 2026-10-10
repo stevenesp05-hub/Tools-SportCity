@@ -237,7 +237,7 @@ export function SelectionBubble({
       role="toolbar"
       aria-label="Formato del texto seleccionado"
       style={{ left, top, transform: 'translateX(-50%)' }}
-      className="fixed z-50 flex items-center gap-0.5 rounded-lg border border-border bg-popover p-1 shadow-lg"
+      className="fixed z-50 flex items-center gap-0.5 glass rounded-xl p-1"
     >
       {linkMode ? (
         <form

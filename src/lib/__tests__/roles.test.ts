@@ -25,19 +25,22 @@ describe('roles: matriz de permisos', () => {
     expect(can('admin').sort()).toEqual(Object.keys(PERMISSIONS).sort())
   })
 
-  it('recepción trabaja los documentos pero no aprueba, elimina ni administra', () => {
+  it('recepción trabaja los documentos, pero no aprueba, elimina ni administra', () => {
     expect(can('recepcion').sort()).toEqual(
       [
         'tools.documentos.ver',
         'tools.documentos.crear',
         'tools.documentos.editar',
         'tools.documentos.comentar',
+        'tools.okr.ver',
+        'tools.okr.registrar',
       ].sort(),
     )
   })
 
   it('profesor solo puede ver', () => {
     expect(can('profesor')).toEqual(['tools.documentos.ver'])
+    expect(can('profesor')).not.toContain('tools.okr.ver')
   })
 
   it('los roles antiguos se traducen y lo desconocido queda como profesor', () => {

@@ -9,6 +9,7 @@ import {
   FileText,
   ListTree,
   Network,
+  Workflow,
   CircleCheck,
   ClipboardList,
   Heading2,
@@ -468,7 +469,7 @@ export function tableChartData(state: EditorState): {
 // ---------- Organigramas y gráficos ----------
 
 export type BlockDialogRequest = {
-  type: 'org' | 'chart'
+  type: 'org' | 'chart' | 'flow'
   /** Posición del bloque que se edita; null si es uno nuevo. */
   pos: number | null
   attrs?: Record<string, unknown>
@@ -496,7 +497,13 @@ export const PageBreakShortcut = Extension.create({
   },
 })
 
-/** Clic sobre un organigrama o gráfico en modo edición: abre su editor. */
+const BLOCK_KINDS: Partial<Record<string, BlockDialogRequest['type']>> = {
+  orgChart: 'org',
+  chart: 'chart',
+  flowChart: 'flow',
+}
+
+/** Clic sobre un organigrama, gráfico o diagrama en modo edición: abre su editor. */
 export const BlockEditing = Extension.create({
   name: 'scBlockEditing',
   addProseMirrorPlugins() {
@@ -505,9 +512,10 @@ export const BlockEditing = Extension.create({
         props: {
           handleClickOn(view, _pos, node, nodePos) {
             if (!view.editable) return false
-            if (node.type.name === 'orgChart' || node.type.name === 'chart') {
+            const kind = BLOCK_KINDS[node.type.name]
+            if (kind) {
               openBlockDialog({
-                type: node.type.name === 'orgChart' ? 'org' : 'chart',
+                type: kind,
                 pos: nodePos,
                 attrs: node.attrs,
               })
@@ -982,6 +990,15 @@ export const SLASH_ITEMS: SlashItem[] = [
     description: 'Estructura con niveles, escrita como lista',
     keywords: 'organigrama estructura jerarquia equipo',
     run: () => openBlockDialog({ type: 'org', pos: null }),
+  },
+  {
+    group: 'Datos',
+    icon: Workflow,
+    tint: 'text-indigo-600',
+    title: 'Diagrama de flujo',
+    description: 'Pasos y decisiones, escritos como texto (A --> B)',
+    keywords: 'diagrama flujo proceso pasos mermaid flowchart decision',
+    run: () => openBlockDialog({ type: 'flow', pos: null }),
   },
   {
     group: 'Datos',
