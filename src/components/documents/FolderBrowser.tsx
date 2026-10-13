@@ -741,7 +741,7 @@ export function FolderBrowser({
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Administración siempre la ve. Recepción la ve por defecto.
-                      Marca Profesor para darle acceso a esta carpeta.
+                      Profesor y Comité arbitral solo la ven si los marcas.
                     </p>
                   </div>
                 )}
@@ -1025,7 +1025,8 @@ export function FolderBrowser({
           </div>
           <p className="text-xs text-muted-foreground">
             Administración siempre la ve. Recepción la ve por defecto. El
-            Profesor solo ve las carpetas donde lo marcas.
+            Profesor y el Comité arbitral solo ven las carpetas donde los
+            marcas.
           </p>
           <label className="flex items-center gap-1.5 text-sm text-foreground">
             <Checkbox

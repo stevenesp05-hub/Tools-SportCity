@@ -41,6 +41,8 @@ import type {
 } from '#/components/documents/editor-extras'
 import { imageFilesFrom, insertImageFiles } from '#/lib/image-upload'
 import { cleanPastedHtml } from '#/lib/paste-clean'
+import { Spellcheck } from '#/components/documents/spellcheck'
+import { EditorContextMenu } from '#/components/documents/EditorContextMenu'
 import { TableGrips } from '#/components/documents/TableGrips'
 import { BlockPicker } from '#/components/documents/BlockPicker'
 import { SelectionBubble } from '#/components/documents/SelectionBubble'
@@ -161,6 +163,7 @@ export function DocumentEditor({
       RowResize,
       BlockEditing,
       PageBreakShortcut,
+      Spellcheck,
       createSlashMenu(setSlash),
       createDocLinkMenu(setSlash),
       Pagination.configure({
@@ -175,6 +178,8 @@ export function DocumentEditor({
   const editor = useEditor({
     extensions,
     editorProps: {
+      // El corrector es el propio (spellcheck.ts): el del navegador se apaga para no duplicar subrayados.
+      attributes: { spellcheck: 'false', lang: 'es' },
       // Limpia el HTML pegado desde fuera (Word, Docs, Excel, una web): nada de estilos en línea
       // ni clases de origen, solo la estructura. El pegado interno (copiar/pegar dentro del mismo
       // editor) no pasa por aquí — ProseMirror lo reconstruye directo desde su propio portapapeles.
@@ -445,9 +450,16 @@ export function DocumentEditor({
       onRequestEdit?.()
       return
     }
-    // Clic fuera del texto (en el hueco de la hoja): cursor al final del documento.
-    if (!(event.target as HTMLElement).closest('.ProseMirror'))
-      editor.commands.focus('end')
+    // Clic fuera del texto (en los márgenes de la hoja): cursor en el punto del texto más cercano al
+    // clic, como en Word o Docs. Antes saltaba siempre al final del documento.
+    if ((event.target as HTMLElement).closest('.ProseMirror')) return
+    const rect = editor.view.dom.getBoundingClientRect()
+    const hit = editor.view.posAtCoords({
+      left: Math.min(Math.max(event.clientX, rect.left + 2), rect.right - 2),
+      top: Math.min(Math.max(event.clientY, rect.top + 2), rect.bottom - 2),
+    })
+    if (hit) editor.chain().focus().setTextSelection(hit.pos).run()
+    else editor.commands.focus('end')
   }
 
   const outlineNav = (
@@ -632,6 +644,7 @@ export function DocumentEditor({
       <SlashMenuView slash={slash} />
       {editable && <BlockPicker editor={editor} />}
       {editable && <TableGrips editor={editor} />}
+      {editable && <EditorContextMenu editor={editor} editable={editable} />}
       {editable && (
         <SelectionBubble editor={editor} onComment={onCommentSelection} />
       )}

@@ -4,8 +4,8 @@ import type { JSONContent } from '@tiptap/react'
 import mammoth from 'mammoth'
 import WordExtractor from 'word-extractor'
 import { authMiddleware } from '#/server/auth'
-import { insertDocumentWithContent } from '#/server/documents'
-import { assertPermission } from '#/lib/permissions'
+import { approveDirectly, insertDocumentWithContent } from '#/server/documents'
+import { assertPermission, autoApproves } from '#/lib/permissions'
 import { hasShoutedWord, toNameCase } from '#/lib/name-rules'
 import { mapLimit } from '#/lib/map-limit'
 import { SCHEMA_EXTENSIONS } from '#/lib/editor-extensions'
@@ -312,6 +312,8 @@ export const importDocument = createServerFn({ method: 'POST' })
         theme: campaign ? 'campaign' : undefined,
       },
     )
+    if (autoApproves(context.user.role))
+      await approveDirectly(context.supabase, context.user.id, doc.id)
     return {
       id: doc.id,
       title,

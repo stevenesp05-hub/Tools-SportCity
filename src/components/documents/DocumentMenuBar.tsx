@@ -59,6 +59,7 @@ import { DOC_THEMES, THEME_INFO } from '#/lib/doc-themes'
 import type { DocTheme } from '#/lib/doc-themes'
 import type { DocStatus } from '#/server/documents'
 import { downloadFile } from '#/lib/download'
+import { TableGrid } from '#/components/documents/TableGridPicker'
 import { cn } from '#/lib/utils'
 
 /** Eventos con los que la barra de menús pide cosas a piezas que viven en otro sitio. */
@@ -330,44 +331,60 @@ export const DocumentMenuBar = memo(function DocumentMenuBar(props: Props) {
 
       <Menu>
         <MenubarTrigger>Insertar</MenubarTrigger>
-        <MenubarContent className="w-[min(48rem,94vw)] p-2">
+        <MenubarContent className="w-60">
           <MenubarItem disabled={off} onSelect={() => emit('sc:block-picker')}>
             <Search /> Buscar bloque…
             <MenubarShortcut>/ o botón +</MenubarShortcut>
           </MenubarItem>
           <MenubarSeparator />
-          {/* Todo a la vista: cada grupo de bloques en su columna, sin submenús que abrir */}
-          <div className="gap-x-3 sm:columns-2 lg:columns-3">
-            {Object.entries(groups).map(([group, items]) => (
-              <div key={group} className="mb-2 break-inside-avoid">
-                <MenubarLabel>{group}</MenubarLabel>
-                {items.map((item) => {
-                  const Icon = item.icon
-                  return (
-                    <MenubarItem
-                      key={item.title}
-                      disabled={off}
-                      title={item.description}
-                      onSelect={run((e) => item.run(e))}
-                    >
-                      <Icon className={item.tint} />
-                      <span className="truncate">{item.title}</span>
-                      {item.shortcut && (
-                        <MenubarShortcut>{item.shortcut}</MenubarShortcut>
-                      )}
-                    </MenubarItem>
-                  )
-                })}
-              </div>
-            ))}
-            <div className="mb-2 break-inside-avoid">
-              <MenubarLabel>Enlaces</MenubarLabel>
-              <MenubarItem disabled={off} onSelect={() => emit(LINK_EVENT)}>
-                <LinkIcon /> Enlace web
-                <MenubarShortcut>Ctrl+K</MenubarShortcut>
-              </MenubarItem>
-            </div>
-          </div>
+          <MenubarSub>
+            <MenubarSubTrigger disabled={off}>Tabla</MenubarSubTrigger>
+            <MenubarSubContent className="p-3">
+              <TableGrid
+                onPick={(rows, cols) =>
+                  editor
+                    ?.chain()
+                    .focus()
+                    .insertTable({ rows, cols, withHeaderRow: true })
+                    .run()
+                }
+              />
+            </MenubarSubContent>
+          </MenubarSub>
+          {/* Un submenú por grupo: se va abriendo poco a poco en vez de una lista enorme */}
+          {Object.entries(groups).map(([group, items]) => {
+            const shown = items.filter((item) => item.title !== 'Tabla')
+            if (shown.length === 0) return null
+            return (
+              <MenubarSub key={group}>
+                <MenubarSubTrigger disabled={off}>{group}</MenubarSubTrigger>
+                <MenubarSubContent className="max-h-[70dvh] min-w-56 overflow-y-auto">
+                  {shown.map((item) => {
+                    const Icon = item.icon
+                    return (
+                      <MenubarItem
+                        key={item.title}
+                        disabled={off}
+                        title={item.description}
+                        onSelect={run((e) => item.run(e))}
+                      >
+                        <Icon className={item.tint} />
+                        <span className="truncate">{item.title}</span>
+                        {item.shortcut && (
+                          <MenubarShortcut>{item.shortcut}</MenubarShortcut>
+                        )}
+                      </MenubarItem>
+                    )
+                  })}
+                </MenubarSubContent>
+              </MenubarSub>
+            )
+          })}
+          <MenubarSeparator />
+          <MenubarItem disabled={off} onSelect={() => emit(LINK_EVENT)}>
+            <LinkIcon /> Enlace web
+            <MenubarShortcut>Ctrl+K</MenubarShortcut>
+          </MenubarItem>
         </MenubarContent>
       </Menu>
 
@@ -571,16 +588,20 @@ export const DocumentMenuBar = memo(function DocumentMenuBar(props: Props) {
       <Menu>
         <MenubarTrigger>Tabla</MenubarTrigger>
         <MenubarContent className="w-60">
-          <MenubarItem
-            disabled={off}
-            onSelect={run((e) =>
-              chain(e)
-                .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-                .run(),
-            )}
-          >
-            Insertar tabla 3 × 3
-          </MenubarItem>
+          <MenubarSub>
+            <MenubarSubTrigger disabled={off}>Insertar tabla</MenubarSubTrigger>
+            <MenubarSubContent className="p-3">
+              <TableGrid
+                onPick={(rows, cols) =>
+                  editor
+                    ?.chain()
+                    .focus()
+                    .insertTable({ rows, cols, withHeaderRow: true })
+                    .run()
+                }
+              />
+            </MenubarSubContent>
+          </MenubarSub>
           <MenubarSeparator />
           <MenubarLabel>Filas</MenubarLabel>
           <MenubarItem

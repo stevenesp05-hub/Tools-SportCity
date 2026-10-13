@@ -713,10 +713,17 @@ export const COMMUNICATION_ITEMS: SlashItem[] = [
           type: 'callout',
           attrs: { tone: 'cta' },
           content: [
-            para(plain('Mensaje de cierre que invita a actuar.')),
-            para(plain('Teléfono · Teléfono')),
-            para(plain('correo@dominio.com')),
-            para(styled('www.sitio.com', { bold: true }), plain(' · @usuario')),
+            para(
+              plain(
+                'Reserva tu cancha o inscribe a tu equipo en Sport City Club.',
+              ),
+            ),
+            para(plain('5865-1010')),
+            para(plain('info@sportcityclub.com')),
+            para(
+              styled('www.sportcitynic.com', { bold: true }),
+              plain(' · Carretera Norte, Km 8.5, Managua'),
+            ),
           ],
         })
         .run(),

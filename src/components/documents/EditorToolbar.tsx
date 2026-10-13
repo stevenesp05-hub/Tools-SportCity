@@ -91,6 +91,7 @@ import {
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Separator } from '#/components/ui/separator'
+import { TableGridPicker } from '#/components/documents/TableGridPicker'
 import { cn } from '#/lib/utils'
 
 export const CALLOUT_TONES = [
@@ -1045,18 +1046,7 @@ export function Toolbar({ editor }: { editor: Editor }) {
           active={state.taskList}
         />
         <Separator orientation="vertical" className="mx-1 h-5" />
-        <IconButton
-          icon={TableIcon}
-          label="Insertar tabla"
-          onClick={() =>
-            editor
-              .chain()
-              .focus()
-              .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-              .run()
-          }
-          active={state.table}
-        />
+        <TableGridPicker editor={editor} active={state.table} />
         <IconButton
           icon={ImageIcon}
           label="Insertar imagen"

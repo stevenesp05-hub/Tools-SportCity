@@ -1897,3 +1897,10 @@ div[data-callout][data-tone='cta'] > p:first-child {
 .doc-sheet[data-compact='true'] .ProseMirror th {
   font-size: 11px;
 }
+
+/* Corrector ortográfico: línea roja ondulada bajo las palabras desconocidas (solo en pantalla) */
+.doc-sheet .ProseMirror .sc-misspelled {
+  text-decoration: underline wavy oklch(0.58 0.2 25);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}

@@ -3,7 +3,12 @@ import { notFound } from '@tanstack/react-router'
 import { z } from 'zod'
 import type { JSONContent } from '@tiptap/react'
 import { authMiddleware } from '#/server/auth'
-import { assertPermission, hasPermission, ROLES } from '#/lib/permissions'
+import {
+  assertPermission,
+  autoApproves,
+  hasPermission,
+  ROLES,
+} from '#/lib/permissions'
 import {
   assertNameCase,
   hasShoutedWord,
@@ -231,6 +236,27 @@ export const listDocuments = createServerFn({ method: 'GET' })
   })
 
 /** Crea un documento con su primera versión (usado al crear desde plantilla y al importar). */
+/**
+ * Aprobación directa (comité arbitral): el documento queda aprobado a nombre de quien lo escribe, sin
+ * pasar por revisión. Solo toca los que siguen en borrador, para no pisar «vigente» ni «vencido».
+ */
+export async function approveDirectly(
+  supabase: SupabaseServerClient,
+  userId: string,
+  documentId: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from('documents')
+    .update({
+      status: 'aprobado',
+      approved_by: userId,
+      approved_at: new Date().toISOString(),
+    })
+    .eq('id', documentId)
+    .eq('status', 'borrador')
+  if (error) throw new Error(error.message)
+}
+
 export async function insertDocumentWithContent(
   supabase: SupabaseServerClient,
   userId: string,
@@ -351,6 +377,8 @@ export const createDocument = createServerFn({ method: 'POST' })
         theme: data.theme,
       },
     )
+    if (autoApproves(context.user.role))
+      await approveDirectly(context.supabase, context.user.id, created.id)
     return created
   })
 
@@ -842,6 +870,8 @@ export const saveDocumentVersion = createServerFn({ method: 'POST' })
       content: data.content,
       contentHtml: data.contentHtml,
     })
+    if (autoApproves(context.user.role))
+      await approveDirectly(context.supabase, context.user.id, data.documentId)
     await context.supabase
       .from('document_drafts')
       .delete()
@@ -864,9 +894,16 @@ export const restoreVersion = createServerFn({ method: 'POST' })
       .eq('document_id', data.documentId)
       .single()
     if (error) throw new Error(error.message)
-    return insertNextVersion(context.supabase, context.user.id, {
-      documentId: data.documentId,
-      content: version.content as JSONContent,
-      contentHtml: version.content_html as string,
-    })
+    const restored = await insertNextVersion(
+      context.supabase,
+      context.user.id,
+      {
+        documentId: data.documentId,
+        content: version.content as JSONContent,
+        contentHtml: version.content_html as string,
+      },
+    )
+    if (autoApproves(context.user.role))
+      await approveDirectly(context.supabase, context.user.id, data.documentId)
+    return restored
   })

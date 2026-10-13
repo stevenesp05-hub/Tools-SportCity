@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '#/components/ui/button'
 import { Label } from '#/components/ui/label'
-import { Textarea } from '#/components/ui/textarea'
+import { OrgTreeEditor } from '#/components/documents/OrgTreeEditor'
 import {
   Dialog,
   DialogContent,
@@ -57,6 +57,8 @@ export function BlockDialog({
   }, [request])
 
   const org = useMemo(() => parseOrg(text), [text])
+  const initialText =
+    (request?.attrs?.text as string | undefined) ?? ORG_EXAMPLE
 
   if (request?.type === 'flow')
     return <FlowDialog request={request} onClose={onClose} onSave={onSave} />
@@ -73,17 +75,15 @@ export function BlockDialog({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="block-text">Estructura</Label>
-            <Textarea
-              id="block-text"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              className="min-h-56 font-mono text-xs"
-              spellCheck={false}
+            <Label>Estructura</Label>
+            <OrgTreeEditor
+              key={`${request?.pos ?? 'new'}-${initialText}`}
+              value={initialText}
+              onChange={setText}
             />
             <p className="text-xs text-muted-foreground">
-              Una línea por persona: "Nombre | Cargo". Sangra con dos espacios
-              para ponerla debajo de otra.
+              Usa + para añadir un subordinado y las flechas para cambiar de
+              nivel o mover un equipo entero.
             </p>
           </div>
 
