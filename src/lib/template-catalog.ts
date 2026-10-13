@@ -33,7 +33,7 @@ export const TEMPLATE_CATEGORIES = [
   {
     id: 'eventos',
     label: 'Eventos y ligas',
-    hint: 'Reglamentos, bases, inscripciones y actas de partido',
+    hint: 'Reglamentos, bases, inscripciones, actas y comunicados del comité arbitral',
   },
 ] as const
 
@@ -44,7 +44,7 @@ const normalize = (value: string) =>
 
 const CATEGORY_RULES: Array<[RegExp, TemplateCategory]> = [
   [
-    /evento|liga|torneo|convocatoria|protesta|inscripcion de equipo|acta de partido|codigo de conducta/,
+    /evento|liga|torneo|convocatoria|protesta|inscripcion de equipo|acta de partido|codigo de conducta|arbitral|sancion|designacion|suspension o reprogramacion|resultados y posiciones/,
     'eventos',
   ],
   [
@@ -77,7 +77,7 @@ const THEME_RULES: Array<[RegExp, DocTheme]> = [
     'report',
   ],
   [
-    /evento|liga|torneo|convocatoria|codigo de conducta|acta de partido|protesta|inscripcion/,
+    /evento|liga|torneo|convocatoria|codigo de conducta|acta de partido|protesta|inscripcion|arbitral|sancion|designacion|suspension o reprogramacion|resultados y posiciones/,
     'event',
   ],
   [

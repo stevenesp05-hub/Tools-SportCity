@@ -25,6 +25,14 @@ export const listUsers = createServerFn({ method: 'GET' })
     return data.map((u) => ({ ...u, role: normalizeRole(u.role) }))
   })
 
+/** Si la base de datos aún no conoce un rol nuevo, lo dice claro en vez de soltar el error de Postgres. */
+const roleFailure = (message: string) =>
+  new Error(
+    /invalid input value for enum/i.test(message)
+      ? 'Ese rol aún no existe en la base de datos: falta ejecutar en Supabase la migración 0027_comite_arbitral_rol.sql (y después 0028).'
+      : message,
+  )
+
 export const updateUserRole = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .validator(z.object({ userId: z.string().min(1), role: z.enum(ROLES) }))
@@ -37,7 +45,7 @@ export const updateUserRole = createServerFn({ method: 'POST' })
       .from('profiles')
       .update({ role: data.role })
       .eq('id', data.userId)
-    if (error) throw new Error(error.message)
+    if (error) throw roleFailure(error.message)
     forgetCachedProfile(data.userId)
     return { ok: true as const }
   })
@@ -68,7 +76,10 @@ export const createUserAccount = createServerFn({ method: 'POST' })
       .from('profiles')
       .update({ role: data.role, full_name: data.fullName ?? null })
       .eq('id', created.user.id)
-    if (profileError) throw new Error(profileError.message)
+    if (profileError)
+      throw roleFailure(
+        `La cuenta se creó, pero no se le pudo poner el rol: ${profileError.message}`,
+      )
 
     return { ok: true as const }
   })

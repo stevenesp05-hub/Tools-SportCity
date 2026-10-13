@@ -3,9 +3,17 @@
  * - admin: todo.
  * - recepcion: trabaja con los documentos (crea, edita, comparte, pide revisión, comenta) pero no
  *   aprueba, elimina, gestiona plantillas, accesos ni usuarios.
+ * - comite_arbitral: redacta comunicados. Crea, edita y comparte documentos, pero solo en las carpetas
+ *   donde se le da acceso de forma expresa, y sus documentos quedan aprobados directamente (la
+ *   administración le da plena confianza). No ve la Gestión (OKR, KPI, presupuesto…).
  * - profesor: solo lectura, y únicamente de las carpetas donde se le da acceso de forma expresa.
  */
-export const ROLES = ['admin', 'recepcion', 'profesor'] as const
+export const ROLES = [
+  'admin',
+  'recepcion',
+  'comite_arbitral',
+  'profesor',
+] as const
 
 export type Role = (typeof ROLES)[number]
 
@@ -21,7 +29,10 @@ export function normalizeRole(value: unknown): Role {
   return LEGACY_ROLES[String(value)] ?? 'profesor'
 }
 
-/** Quienes ven una carpeta o documento sin restricción expresa (`visible_roles` nulo). El profesor nunca entra aquí. */
+/**
+ * Quienes ven una carpeta o documento sin restricción expresa (`visible_roles` nulo). El profesor y el
+ * comité arbitral nunca entran aquí: solo ven lo que los nombra.
+ */
 export const STAFF_ROLES: ReadonlyArray<Role> = ['admin', 'recepcion']
 
 /** Roles que ven algo según su `visible_roles` (nulo = personal). Admin lo ve siempre. */
@@ -40,10 +51,20 @@ export function toVisibleRoles(roles: ReadonlyArray<Role>): Role[] | null {
   return isDefault ? null : ROLES.filter((r) => set.has(r))
 }
 
+/**
+ * Roles cuyos documentos quedan aprobados directamente al crearlos o guardarlos, sin pasar por
+ * revisión. No es un permiso de la matriz: el administrador aprueba a mano, y solo a quien se le da
+ * plena confianza se le aprueba solo.
+ */
+export const AUTO_APPROVE_ROLES: ReadonlyArray<Role> = ['comite_arbitral']
+
+export const autoApproves = (role: Role | null | undefined): boolean =>
+  role !== null && role !== undefined && AUTO_APPROVE_ROLES.includes(role)
+
 export const PERMISSIONS = {
   'tools.documentos.ver': ROLES,
-  'tools.documentos.crear': ['admin', 'recepcion'],
-  'tools.documentos.editar': ['admin', 'recepcion'],
+  'tools.documentos.crear': ['admin', 'recepcion', 'comite_arbitral'],
+  'tools.documentos.editar': ['admin', 'recepcion', 'comite_arbitral'],
   'tools.documentos.eliminar': ['admin'],
   'tools.documentos.aprobar': ['admin'],
   'tools.documentos.comentar': ['admin', 'recepcion'],
@@ -78,5 +99,6 @@ export function assertPermission(
 export const ROLE_LABELS: Record<Role, string> = {
   admin: 'Administrador',
   recepcion: 'Recepción',
+  comite_arbitral: 'Comité arbitral',
   profesor: 'Profesor',
 }

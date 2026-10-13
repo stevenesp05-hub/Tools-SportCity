@@ -2579,6 +2579,224 @@ const INVENTARIOS: TemplateDefinition[] = [
   },
 ]
 
+/**
+ * Comunicados del comité arbitral. Son globales (sin carpeta propia) para que aparezcan en «Ligas»,
+ * «Torneos» y «Manuales > Academia», que son las carpetas donde trabaja el comité. Todas llevan el
+ * cuadro de control con código SC-ARB-nnn, como el resto del catálogo, y salen con el tema de eventos.
+ * Las reglas que citan (puntos, tolerancia, desempate, medio oficial) son las del reglamento de liga.
+ */
+const COMITE_ARBITRAL: TemplateDefinition[] = [
+  {
+    name: 'Comunicado del comité arbitral',
+    description:
+      'Comunicado oficial del comité a equipos, delegados y jugadores: asunto, disposiciones y firma.',
+    space: null,
+    blocks: formal(
+      'Comunicado del comité arbitral',
+      'SC-ARB-001',
+      'Comité arbitral',
+      [
+        field('Comunicado N.º'),
+        field('Fecha', '{{fecha}}'),
+        field('Dirigido a', 'Equipos, delegados y jugadores de {{liga}}'),
+        h2('Asunto'),
+        p('[Asunto en una línea]'),
+        h2('Comunicado'),
+        p('[Mensaje principal, claro y respetuoso]'),
+        h2('Disposiciones'),
+        ol([
+          '[Primera disposición]',
+          '[Segunda disposición]',
+          '[Fecha desde la que rige]',
+        ]),
+        callout(
+          'info',
+          'El único medio oficial de comunicación entre los equipos y la organización es el grupo de WhatsApp de la liga.',
+        ),
+        h2('Contacto'),
+        p('[Teléfono · correo]'),
+        firmas(['Presidente del comité', 'Secretario del comité']),
+      ],
+    ),
+  },
+  {
+    name: 'Resolución de protesta del comité arbitral',
+    description:
+      'Respuesta oficial a una protesta: antecedentes, consideraciones, decisión y firmas.',
+    space: null,
+    blocks: formal(
+      'Resolución de protesta del comité arbitral',
+      'SC-ARB-002',
+      'Comité arbitral',
+      [
+        table(
+          ['Campo', 'Detalle'],
+          [
+            ['Protesta N.º', ''],
+            ['Fecha de la resolución', '{{fecha}}'],
+            ['Equipo que protesta', ''],
+            ['Equipo contrario', ''],
+            ['Partido, fecha y hora', ''],
+            ['División / categoría', '{{division}}'],
+          ],
+        ),
+        h2('Antecedentes'),
+        p('[Qué ocurrió y quién presentó la protesta, en orden cronológico]'),
+        h2('Consideraciones'),
+        ol([
+          '[Artículo del reglamento aplicable]',
+          '[Pruebas revisadas]',
+          '[Informe del árbitro]',
+        ]),
+        h2('Resolución'),
+        table(['Decisión', 'Fundamento', 'Efecto'], blank(1, 3)),
+        callout(
+          'warn',
+          'La resolución del comité es de cumplimiento estricto. Se comunica a los equipos por el medio oficial de la liga.',
+        ),
+        firmas(['Presidente del comité', 'Secretario del comité']),
+      ],
+    ),
+  },
+  {
+    name: 'Sanciones disciplinarias de la jornada',
+    description:
+      'Listado oficial de sanciones y multas de una jornada, por jugador y equipo.',
+    space: null,
+    blocks: formal(
+      'Sanciones disciplinarias de la jornada',
+      'SC-ARB-003',
+      'Comité arbitral',
+      [
+        table(
+          ['Campo', 'Detalle'],
+          [
+            ['Jornada', '{{jornada}}'],
+            ['División / categoría', '{{division}}'],
+            ['Fecha de publicación', '{{fecha}}'],
+          ],
+        ),
+        h2('Sanciones'),
+        table(
+          [
+            'Jugador / DT',
+            'Equipo',
+            'Partido',
+            'Falta',
+            'Sanción (partidos)',
+            'Multa (C$)',
+          ],
+          blank(6, 6),
+        ),
+        callout(
+          'warn',
+          'Ningún jugador o director técnico puede jugar con una multa pendiente.',
+        ),
+        h2('Observaciones'),
+        p(''),
+        firmas(['Presidente del comité', 'Secretario del comité']),
+      ],
+    ),
+  },
+  {
+    name: 'Designación arbitral de la jornada',
+    description:
+      'Programación de partidos con cancha, hora y árbitro designado para cada uno.',
+    space: null,
+    blocks: formal(
+      'Designación arbitral de la jornada',
+      'SC-ARB-004',
+      'Comité arbitral',
+      [
+        table(
+          ['Campo', 'Detalle'],
+          [
+            ['Jornada', '{{jornada}}'],
+            ['División / categoría', '{{division}}'],
+            ['Fecha de publicación', '{{fecha}}'],
+          ],
+        ),
+        h2('Programación'),
+        table(
+          ['Fecha y hora', 'Cancha', 'Local', 'Visitante', 'Árbitro'],
+          blank(8, 5),
+        ),
+        callout(
+          'info',
+          'Tolerancia de 10 minutos; después, el equipo ausente pierde por default (0–3).',
+        ),
+        firmas(['Presidente del comité']),
+      ],
+    ),
+  },
+  {
+    name: 'Suspensión o reprogramación de partidos',
+    description:
+      'Aviso oficial de partidos suspendidos o movidos de fecha, con el motivo y la nueva programación.',
+    space: null,
+    blocks: formal(
+      'Suspensión o reprogramación de partidos',
+      'SC-ARB-005',
+      'Comité arbitral',
+      [
+        field('Fecha del aviso', '{{fecha}}'),
+        field('Dirigido a', 'Equipos y delegados de {{liga}}'),
+        h2('Motivo'),
+        p('[Motivo de la suspensión o reprogramación]'),
+        h2('Partidos afectados'),
+        table(
+          [
+            'Partido',
+            'Fecha original',
+            'Nueva fecha y hora',
+            'Cancha',
+            'Observación',
+          ],
+          blank(4, 5),
+        ),
+        callout(
+          'info',
+          'Un partido solo se suspende por clima con tormenta eléctrica o cancha impracticable, según el criterio del árbitro y del comité.',
+        ),
+        firmas(['Presidente del comité']),
+      ],
+    ),
+  },
+  {
+    name: 'Resultados y posiciones de la jornada',
+    description:
+      'Resultados de la jornada y tabla de posiciones actualizada, con el criterio de desempate.',
+    space: null,
+    blocks: formal(
+      'Resultados y posiciones de la jornada',
+      'SC-ARB-006',
+      'Comité arbitral',
+      [
+        table(
+          ['Campo', 'Detalle'],
+          [
+            ['Jornada', '{{jornada}}'],
+            ['División / categoría', '{{division}}'],
+            ['Fecha de publicación', '{{fecha}}'],
+          ],
+        ),
+        h2('Resultados'),
+        table(['Local', 'Marcador', 'Visitante', 'Observaciones'], blank(8, 4)),
+        h2('Tabla de posiciones'),
+        table(
+          ['Pos.', 'Equipo', 'PJ', 'PG', 'PE', 'PP', 'GF', 'GC', 'DG', 'Pts'],
+          blank(8, 10),
+        ),
+        callout(
+          'info',
+          'Criterios de desempate, en orden: 1) puntos, 2) diferencia de goles, 3) goles a favor, 4) goles en contra.',
+        ),
+        firmas(['Presidente del comité']),
+      ],
+    ),
+  },
+]
+
 export const DEFAULT_TEMPLATES: TemplateDefinition[] = [
   ...MANUALES,
   ...REGLAMENTOS,
@@ -2589,5 +2807,6 @@ export const DEFAULT_TEMPLATES: TemplateDefinition[] = [
   ...ORGANIGRAMA,
   ...DOCUMENTACION,
   ...INVENTARIOS,
+  ...COMITE_ARBITRAL,
   ...GENERALES,
 ]
