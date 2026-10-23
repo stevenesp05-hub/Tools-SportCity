@@ -44,7 +44,7 @@ export type PaginationOptions = {
 const key = new PluginKey<PaginationState>('sc-pagination')
 const titleSync = new WeakMap<EditorView, () => void>()
 
-type Unit = {
+export type Unit = {
   pos: number
   tag: BreakTag
   cols: number
@@ -274,19 +274,13 @@ export function makeNatural(
   }
 }
 
-function measure(view: EditorView, options: PaginationOptions) {
-  const region = options.getRegion()
-  if (!region || view.isDestroyed) return null
-  const regionTop = region.getBoundingClientRect().top
-  const gaps = Array.from(
-    view.dom.querySelectorAll<HTMLElement>('.page-gap, tr.page-gap-head'),
-  ).map((g) => {
-    const r = g.getBoundingClientRect()
-    return { top: r.top, height: r.height }
-  })
-  const natural = makeNatural(gaps, regionTop)
-
-  const units = collectUnits(view, natural)
+/**
+ * Reparte las unidades (bloques, filas, elementos de lista) en hojas. Las coordenadas son las del
+ * documento ya con los huecos puestos: cada salto inserta `fill` (el blanco que sobra) más el pie,
+ * el hueco y la cabecera (`PAGE_CHROME_PX`). Por eso el límite de la hoja siguiente avanza
+ * `PAGE_CONTENT_PX + PAGE_CHROME_PX`: así todas las hojas admiten el mismo contenido.
+ */
+export function planPageBreaks(units: Unit[]) {
   const breaks: PageBreak[] = []
   let offset = 0
   let page = 0
@@ -307,9 +301,9 @@ function measure(view: EditorView, options: PaginationOptions) {
         head: null,
         headH: 0,
       })
-      offset += fill
+      offset += fill + PAGE_CHROME_PX
       page += 1
-      limit += PAGE_CONTENT_PX
+      limit += PAGE_CONTENT_PX + PAGE_CHROME_PX
       return
     }
     let fitBottom = bottom
@@ -346,11 +340,25 @@ function measure(view: EditorView, options: PaginationOptions) {
       bottom += shift
       fitBottom += shift
       page += 1
-      limit += PAGE_CONTENT_PX
+      limit += PAGE_CONTENT_PX + PAGE_CHROME_PX
     }
   })
 
   return { breaks, pages: page + 1 }
+}
+function measure(view: EditorView, options: PaginationOptions) {
+  const region = options.getRegion()
+  if (!region || view.isDestroyed) return null
+  const regionTop = region.getBoundingClientRect().top
+  const gaps = Array.from(
+    view.dom.querySelectorAll<HTMLElement>('.page-gap, tr.page-gap-head'),
+  ).map((g) => {
+    const r = g.getBoundingClientRect()
+    return { top: r.top, height: r.height }
+  })
+  const natural = makeNatural(gaps, regionTop)
+
+  return planPageBreaks(collectUnits(view, natural))
 }
 
 const sameBreaks = (a: PageBreak[], b: PageBreak[]) =>

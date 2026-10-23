@@ -841,7 +841,6 @@ const REGLAMENTOS: TemplateDefinition[] = [
       'Datos del cliente y del evento, servicios de interés, presupuesto y forma de pago.',
     space: 'Eventos',
     blocks: formal('Ficha de reserva', 'SC-RES-001', 'Eventos', [
-      field('N.º de ficha'),
       field('Fecha de solicitud', '____ / ____ / ________'),
       callout(
         'info',
@@ -884,35 +883,69 @@ const REGLAMENTOS: TemplateDefinition[] = [
       ),
       h2('3. Espacios y servicios de interés'),
       table(
-        [
-          'Espacios y actividades',
-          'Alimentos y bebidas',
-          'Ambientación y extras',
-        ],
+        ['Espacios y actividades', 'Ambientación y extras', 'Alimentos'],
         [
           [
             '☐ Alquiler de cancha',
-            '☐ Alimentos (menú)',
             '☐ Decoración temática',
+            '☐ Comida (detallar en la sección 4)',
           ],
-          ['☐ Área de Sport Bar', '☐ Bebidas', '☐ Piñata y sorpresas'],
-          ['☐ Animación / recreación', '☐ Pastel', '☐ Sonido / música'],
-          ['☐ Instructor deportivo', '', '☐ Fotografía'],
-          ['', '', '☐ Otro: ____________'],
+          [
+            '☐ Área de Sport Bar',
+            '☐ Piñata y sorpresas',
+            '☐ Bebidas (detallar en la sección 4)',
+          ],
+          [
+            '☐ Animación / recreación',
+            '☐ Sonido / música',
+            '☐ Pastel (detallar en la sección 4)',
+          ],
+          ['☐ Instructor deportivo', '☐ Fotografía', ''],
+          ['', '☐ Otro: ____________', ''],
         ],
+      ),
+      h2('4. Alimentos y bebidas'),
+      callout(
+        'info',
+        'Complete esta sección solo si eligió comida, bebidas o pastel. Marque las opciones y anote cantidades; el equipo confirmará disponibilidad y precio.',
       ),
       table(
-        ['Campo', 'Detalle'],
+        ['Concepto', 'Opciones', 'Cantidad / detalle'],
         [
-          ['Menú / preferencias', ''],
-          ['Restricciones alimentarias', ''],
           [
-            'Proveedores externos',
-            '☐ No ☐ Sí — detallar: ______________________________',
+            'Comida principal',
+            '☐ Pizza ☐ Hamburguesas ☐ Alitas ☐ Hot dogs ☐ Almuerzo o cena servido ☐ Otro: ____________',
+            'Porciones o personas: ______',
           ],
+          [
+            'Bocadillos y acompañamientos',
+            '☐ Snacks ☐ Papas ☐ Ensaladas ☐ Postres ☐ Otro: ____________',
+            '',
+          ],
+          [
+            'Bebidas',
+            '☐ Refrescos ☐ Agua ☐ Jugos ☐ Té o café ☐ Otro: ____________',
+            'Cantidad: ______',
+          ],
+          [
+            'Pastel',
+            '☐ Lo trae el cliente ☐ Lo prepara el club',
+            'Tamaño / sabor / leyenda: ______________',
+          ],
+          [
+            'Forma de servicio',
+            '☐ Autoservicio ☐ Servido en mesa ☐ Barra',
+            'Hora de servicio: ______',
+          ],
+          [
+            'Restricciones alimentarias',
+            '☐ Vegetariano ☐ Sin gluten ☐ Alergias',
+            'Detalle: ______________',
+          ],
+          ['Proveedores externos', '☐ No ☐ Sí', 'Quién y qué: ______________'],
         ],
       ),
-      h2('4. Presupuesto y forma de pago'),
+      h2('5. Presupuesto y forma de pago'),
       table(
         ['Campo', 'Detalle'],
         [
@@ -929,7 +962,7 @@ const REGLAMENTOS: TemplateDefinition[] = [
           ['Requiere factura', '☐ No ☐ Sí — N.º RUC: ________________________'],
         ],
       ),
-      h2('5. Observaciones'),
+      h2('6. Observaciones'),
       table(
         ['Indicaciones especiales, solicitudes adicionales o comentarios'],
         blank(3, 1),
@@ -2797,6 +2830,260 @@ const COMITE_ARBITRAL: TemplateDefinition[] = [
   },
 ]
 
+const EMPRESAS: TemplateDefinition[] = [
+  {
+    name: 'Ficha de empresa',
+    description:
+      'Datos generales, contacto, tipo de relación con el club y observaciones de una empresa.',
+    space: 'Empresas',
+    blocks: formal('Ficha de empresa', 'SC-EMP-001', 'Comercial', [
+      field('Fecha de registro', '{{fecha}}'),
+      h2('1. Datos de la empresa'),
+      table(
+        ['Campo', 'Detalle'],
+        [
+          ['Razón social', ''],
+          ['Nombre comercial', ''],
+          ['RUC', ''],
+          ['Rubro o actividad', ''],
+          ['Dirección', ''],
+          ['Sitio web / redes', ''],
+          ['N.º aproximado de colaboradores', ''],
+        ],
+      ),
+      h2('2. Contacto principal'),
+      table(
+        ['Campo', 'Detalle'],
+        [
+          ['Nombre', ''],
+          ['Cargo', ''],
+          ['Teléfono / WhatsApp', ''],
+          ['Correo electrónico', ''],
+        ],
+      ),
+      h2('3. Relación con Sport City Club'),
+      table(
+        ['Campo', 'Detalle'],
+        [
+          [
+            'Tipo de relación',
+            '☐ Cliente de canchas ☐ Liga empresarial ☐ Evento corporativo ☐ Patrocinio o alianza ☐ Membresía corporativa ☐ Otro: ________',
+          ],
+          ['Sede de interés', '☐ Centro ☐ Norte'],
+          ['Origen del contacto', ''],
+          ['Responsable en el club', ''],
+        ],
+      ),
+      h2('4. Observaciones'),
+      table(['Notas, acuerdos o condiciones especiales'], blank(3, 1)),
+      firmas(['Registró']),
+    ]),
+  },
+  {
+    name: 'Listado de empresas',
+    description:
+      'Directorio de empresas con rubro, contacto, relación con el club y estado.',
+    space: 'Empresas',
+    blocks: formal('Listado de empresas', 'SC-EMP-002', 'Comercial', [
+      field('Actualizado el', '{{fecha}}'),
+      field('Responsable'),
+      h2('Empresas'),
+      table(
+        [
+          'N.º',
+          'Empresa',
+          'Rubro',
+          'Contacto',
+          'Teléfono',
+          'Relación',
+          'Estado',
+        ],
+        blank(15, 7),
+      ),
+      callout(
+        'info',
+        'Estado: activa, en negociación o inactiva. Para el detalle de una empresa, usa su ficha.',
+      ),
+      firmas(['Elaboró']),
+    ]),
+  },
+  {
+    name: 'Listado de colaboradores de la empresa',
+    description:
+      'Nómina de colaboradores de una empresa para ligas, convenios o membresías.',
+    space: 'Empresas',
+    blocks: formal(
+      'Listado de colaboradores de la empresa',
+      'SC-EMP-003',
+      'Comercial',
+      [
+        field('Empresa'),
+        field('Fecha', '{{fecha}}'),
+        field('Motivo del listado'),
+        h2('Colaboradores'),
+        table(
+          [
+            'N.º',
+            'Nombre completo',
+            'Cédula',
+            'Cargo o área',
+            'Teléfono',
+            'Observaciones',
+          ],
+          blank(15, 6),
+        ),
+        callout(
+          'warn',
+          'El listado debe ir con el sello de Recursos Humanos de la empresa para confirmar que son colaboradores activos.',
+        ),
+        firmas(['Representante de la empresa', 'Recursos Humanos']),
+      ],
+    ),
+  },
+  {
+    name: 'Inscripción de empresa en la liga',
+    description:
+      'Inscripción de una empresa y su equipo en la Liga Empresarial, con la planilla de jugadores.',
+    space: 'Empresas',
+    blocks: formal('Inscripción de empresa en la liga', 'SC-EMP-004', 'Ligas', [
+      field('Fecha de inscripción', '{{fecha}}'),
+      h2('1. Datos de la empresa y del equipo'),
+      table(
+        ['Campo', 'Detalle'],
+        [
+          ['Empresa', ''],
+          ['Nombre del equipo', ''],
+          ['Director técnico o capitán', ''],
+          ['Teléfono / WhatsApp del capitán', ''],
+          ['Correo electrónico', ''],
+          ['Color de uniforme', ''],
+        ],
+      ),
+      h2('2. Planilla de jugadores (máximo 15)'),
+      table(
+        ['N.º', 'Nombre completo', 'Cédula', 'Camiseta', 'Cargo en la empresa'],
+        blank(15, 5),
+      ),
+      callout(
+        'info',
+        'Adjunta la cédula en digital de cada jugador y las colillas del INSS si trabaja bajo planilla. Los jugadores subcontratados presentan el comprobante de pago de la empresa. La planilla no puede cambiarse una vez iniciado el torneo.',
+      ),
+      h2('3. Pago de inscripción'),
+      table(
+        ['Campo', 'Detalle'],
+        [
+          ['Monto', 'C$ / US$'],
+          ['Forma de pago', '☐ Efectivo ☐ Tarjeta ☐ Transferencia'],
+          ['Fecha de pago', '____ / ____ / ________'],
+        ],
+      ),
+      callout(
+        'warn',
+        'Al firmar, la empresa y su capitán aceptan el reglamento y las bases de competencia de la liga y se comprometen a darlos a conocer a todos sus jugadores.',
+      ),
+      firmas(['Capitán del equipo', 'Recursos Humanos', 'Sport City Club']),
+    ]),
+  },
+  {
+    name: 'Registro de seguimiento de empresa',
+    description:
+      'Bitácora de llamadas, visitas y acuerdos con una empresa, con próximos pasos.',
+    space: 'Empresas',
+    blocks: formal(
+      'Registro de seguimiento de empresa',
+      'SC-EMP-005',
+      'Comercial',
+      [
+        field('Empresa'),
+        field('Responsable del seguimiento'),
+        h2('Seguimiento'),
+        table(
+          [
+            'Fecha',
+            'Medio',
+            'Con quién',
+            'Qué se habló o acordó',
+            'Próximo paso',
+            'Fecha del próximo paso',
+          ],
+          blank(10, 6),
+        ),
+        callout(
+          'info',
+          'Medio: llamada, WhatsApp, correo o visita. Anota siempre un próximo paso con fecha.',
+        ),
+        firmas(['Responsable']),
+      ],
+    ),
+  },
+  {
+    name: 'Propuesta de membresía corporativa',
+    description:
+      'Propuesta a una empresa para que sus colaboradores usen las instalaciones del club.',
+    space: 'Empresas',
+    blocks: formal(
+      'Propuesta de membresía corporativa',
+      'SC-EMP-006',
+      'Comercial',
+      [
+        callout('summary', '[Resumen de la propuesta en dos o tres frases]'),
+        h2('1. Sport City Club'),
+        p('Presentación breve del club, sus sedes y su comunidad deportiva.'),
+        h2('2. Para [empresa]'),
+        p('[Qué busca la empresa: bienestar, integración, torneos internos…]'),
+        h2('3. Qué incluye'),
+        table(
+          ['Beneficio', 'Detalle', 'Condiciones'],
+          [
+            ['Uso de canchas', '', ''],
+            ['Torneos o ligas internas', '', ''],
+            ['Eventos corporativos', '', ''],
+            ['Otros beneficios', '', ''],
+          ],
+        ),
+        h2('4. Inversión'),
+        table(
+          ['Concepto', 'Colaboradores', 'Precio (C$)', 'Total (C$)'],
+          [...blank(3, 4), ['Total', '', '', '']],
+        ),
+        h2('5. Condiciones'),
+        p('[Vigencia, forma de pago, renovación y cancelación]'),
+        h2('6. Contacto'),
+        p('[Nombre · cargo · teléfono · correo]'),
+        firmas(['Por Sport City Club', 'Por la empresa']),
+      ],
+    ),
+  },
+  {
+    name: 'Control de pagos de empresa',
+    description:
+      'Estado de cuenta de una empresa: lo facturado, lo pagado y el saldo pendiente.',
+    space: 'Empresas',
+    blocks: formal('Control de pagos de empresa', 'SC-EMP-007', 'Finanzas', [
+      field('Empresa'),
+      field('Periodo'),
+      h2('Movimientos'),
+      table(
+        [
+          'Fecha',
+          'Concepto',
+          'Documento N.º',
+          'Cargo (C$)',
+          'Pago (C$)',
+          'Saldo (C$)',
+        ],
+        blank(12, 6),
+      ),
+      h2('Resumen'),
+      table(
+        ['Total cargado (C$)', 'Total pagado (C$)', 'Saldo pendiente (C$)'],
+        [['', '', '']],
+      ),
+      firmas(['Elaboró', 'Finanzas']),
+    ]),
+  },
+]
+
 export const DEFAULT_TEMPLATES: TemplateDefinition[] = [
   ...MANUALES,
   ...REGLAMENTOS,
@@ -2808,5 +3095,6 @@ export const DEFAULT_TEMPLATES: TemplateDefinition[] = [
   ...DOCUMENTACION,
   ...INVENTARIOS,
   ...COMITE_ARBITRAL,
+  ...EMPRESAS,
   ...GENERALES,
 ]

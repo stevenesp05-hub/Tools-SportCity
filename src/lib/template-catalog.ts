@@ -81,7 +81,7 @@ const THEME_RULES: Array<[RegExp, DocTheme]> = [
     'event',
   ],
   [
-    /checklist|registro|ficha|inventario|kardex|acta|planilla|formato|orden|requisicion|control|solicitud|instructivo|procedimiento|protocolo|mantenimiento|asistencia|conciliacion|evaluacion|estructura|funciones|conteo|faltantes|baja|prestamo|entrada|salida|recepcion|guia/,
+    /checklist|registro|listado|ficha|inventario|kardex|acta|planilla|formato|orden|requisicion|control|solicitud|instructivo|procedimiento|protocolo|mantenimiento|asistencia|conciliacion|evaluacion|estructura|funciones|conteo|faltantes|baja|prestamo|entrada|salida|recepcion|guia/,
     'internal',
   ],
 ]
